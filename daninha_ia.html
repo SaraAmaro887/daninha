@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroScan — IA para Plantas Daninhas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--verde:#2D5A27;--verde-medio:#3E7B35;--verde-claro:#6AAE5E;--verde-palido:#B8D9B2;--verde-bg:#EEF5EC;--cinza-escuro:#1A1F1A;--cinza:#4A5249;--cinza-claro:#8A9689;--branco:#FAFCF9;--fonte-titulo:'DM Serif Display',serif;--fonte-corpo:'Outfit',sans-serif;--fonte-mono:'DM Mono',monospace;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fonte-corpo);background:var(--branco);color:var(--cinza-escuro);min-height:100vh;}
+header{background:var(--verde);color:white;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.18);}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{width:36px;height:36px;background:var(--verde-claro);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.logo-text{font-family:var(--fonte-titulo);font-size:22px;}
+.logo-sub{font-size:11px;font-weight:300;opacity:.7;letter-spacing:1.5px;text-transform:uppercase;}
+.header-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:500;}
+main{max-width:1100px;margin:0 auto;padding:36px 24px 60px;}
+.page-title{font-family:var(--fonte-titulo);font-size:36px;color:var(--verde);margin-bottom:6px;}
+.page-subtitle{color:var(--cinza);font-size:15px;font-weight:300;margin-bottom:28px;}
+.grid-principal{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:28px;}
+.card{background:white;border-radius:16px;border:1.5px solid #E0E8DF;overflow:hidden;box-shadow:0 2px 12px rgba(45,90,39,.06);}
+.card-header{padding:16px 20px 12px;border-bottom:1px solid #EEF2ED;display:flex;align-items:center;gap:10px;}
+.card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.card-icon.verde{background:var(--verde-bg);}
+.card-icon.terra{background:#F5EDE5;}
+.card-icon.amarelo{background:#FDF8E1;}
+.card-icon.azul{background:#E8F0FE;}
+.card-title{font-size:13px;font-weight:600;color:var(--cinza-escuro);letter-spacing:.3px;text-transform:uppercase;}
+.card-body{padding:20px;}
+.exemplos-titulo{font-size:12px;font-weight:600;color:var(--cinza);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+.exemplos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.exemplo-card{border:2px solid #E0E8DF;border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s;background:white;}
+.exemplo-card:hover{border-color:var(--verde-claro);transform:translateY(-2px);box-shadow:0 4px 12px rgba(45,90,39,.15);}
+.exemplo-card.selecionado{border-color:var(--verde);box-shadow:0 0 0 3px rgba(45,90,39,.15);}
+.exemplo-img{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:var(--verde-bg);}
+.exemplo-img svg{width:100%;height:100%;}
+.exemplo-info{padding:6px 8px;}
+.exemplo-nome{font-size:11px;font-weight:600;color:var(--cinza-escuro);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.exemplo-cultura{font-size:10px;color:var(--cinza-claro);}
+.divisor{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--cinza-claro);font-size:12px;}
+.divisor::before,.divisor::after{content:'';flex:1;height:1px;background:#E0E8DF;}
+.upload-zone{border:2px dashed var(--verde-palido);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .25s;background:var(--verde-bg);position:relative;}
+.upload-zone:hover{border-color:var(--verde-claro);background:#E3F0DF;}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-text{font-size:13px;font-weight:500;color:var(--verde);margin-bottom:2px;}
+.upload-hint{font-size:11px;color:var(--cinza-claro);}
+#preview-area{margin-top:12px;display:none;position:relative;}
+#preview-img{width:100%;border-radius:10px;max-height:200px;object-fit:cover;display:block;}
+.preview-label{position:absolute;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,.6);color:white;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:500;text-align:center;}
+.loading-bar{height:3px;background:var(--verde-bg);border-radius:3px;overflow:hidden;margin:14px 0 6px;display:none;}
+.loading-bar.ativo{display:block;}
+.loading-progress{height:100%;background:linear-gradient(90deg,var(--verde),var(--verde-claro));border-radius:3px;width:0%;transition:width .4s ease;}
+.loading-status{font-size:12px;color:var(--cinza-claro);font-style:italic;display:none;text-align:center;margin-bottom:10px;}
+.loading-status.ativo{display:block;}
+#resultado{display:none;}
+#resultado.ativo{display:block;}
+.resultado-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.resultado-item{background:var(--verde-bg);border-radius:10px;padding:12px 14px;border:1px solid #D5E8D2;}
+.resultado-item.alerta{background:#FEF9E7;border-color:#F5E07A;}
+.resultado-item.perigo{background:#FDEDEC;border-color:#F1A89A;}
+.resultado-item.info{background:#EBF5FB;border-color:#A9CCE3;}
+.resultado-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--cinza);margin-bottom:3px;}
+.resultado-valor{font-size:16px;font-weight:600;color:var(--cinza-escuro);line-height:1.2;}
+.resultado-detalhe{font-size:11px;color:var(--cinza-claro);margin-top:2px;}
+.confianca-bar{height:5px;background:#DDE5DB;border-radius:6px;margin-top:6px;overflow:hidden;}
+.confianca-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--verde-claro),var(--verde));transition:width 1s ease;}
+.recomendacao-box{background:linear-gradient(135deg,var(--verde) 0%,var(--verde-medio) 100%);border-radius:12px;padding:18px;color:white;margin-bottom:14px;}
+.rec-titulo{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;opacity:.75;margin-bottom:6px;}
+.rec-texto{font-size:14px;line-height:1.55;}
+.rec-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.rec-tag{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:500;}
+.acoes-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.acao-btn{padding:10px 8px;border:1.5px solid #DDE5DB;border-radius:8px;background:white;font-family:var(--fonte-corpo);font-size:12px;font-weight:500;color:var(--cinza);cursor:pointer;text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.acao-btn:hover{border-color:var(--verde-claro);color:var(--verde);background:var(--verde-bg);}
+.acao-icon{font-size:18px;}
+.form-row{margin-bottom:14px;}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--cinza);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.form-select,.form-input{width:100%;padding:9px 14px;border:1.5px solid #DDE5DB;border-radius:8px;font-family:var(--fonte-corpo);font-size:14px;color:var(--cinza-escuro);background:white;outline:none;transition:border-color .2s;appearance:none;}
+.form-select:focus,.form-input:focus{border-color:var(--verde-claro);box-shadow:0 0 0 3px rgba(106,174,94,.12);}
+.select-wrap{position:relative;}
+.select-wrap::after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--cinza-claro);pointer-events:none;font-size:12px;}
+.slider-wrap{display:flex;align-items:center;gap:12px;}
+.form-range{flex:1;-webkit-appearance:none;height:4px;border-radius:4px;background:linear-gradient(to right,var(--verde-claro) 0%,var(--verde-claro) var(--val,40%),#DDE5DB var(--val,40%));outline:none;cursor:pointer;}
+.form-range::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--verde);border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:pointer;}
+.range-value{font-family:var(--fonte-mono);font-size:13px;font-weight:500;color:var(--verde);min-width:36px;text-align:right;}
+.btn-analisar{width:100%;padding:13px;background:var(--verde);color:white;border:none;border-radius:10px;font-family:var(--fonte-corpo);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;}
+.btn-analisar:hover{background:var(--verde-medio);transform:translateY(-1px);box-shadow:0 4px 16px rgba(45,90,39,.25);}
+.btn-analisar:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.mapa-container{display:grid;grid-template-columns:repeat(20,1fr);gap:2px;margin-bottom:10px;}
+.mapa-cell{aspect-ratio:1;border-radius:2px;}
+.mapa-legenda{display:flex;gap:16px;font-size:12px;color:var(--cinza-claro);flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:5px;}
+.leg-cor{width:12px;height:12px;border-radius:3px;}
+.historico-vazio{text-align:center;padding:28px 20px;color:var(--cinza-claro);font-size:14px;}
+.historico-item{display:flex;align-items:center;gap:12px;padding:10px 8px;border-bottom:1px solid #EEF2ED;cursor:pointer;transition:background .15s;border-radius:8px;}
+.historico-item:hover{background:var(--verde-bg);}
+.historico-thumb{width:44px;height:44px;border-radius:8px;background:var(--verde-bg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden;}
+.historico-thumb img{width:100%;height:100%;object-fit:cover;}
+.historico-info{flex:1;min-width:0;}
+.historico-especie{font-size:13px;font-weight:600;color:var(--cinza-escuro);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.historico-meta{font-size:11px;color:var(--cinza-claro);margin-top:2px;}
+.historico-badge{font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--verde-bg);color:var(--verde);flex-shrink:0;}
+.card-full{grid-column:1/-1;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease forwards;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.pulsando{animation:pulse 1.2s ease-in-out infinite;}
+@media(max-width:700px){.grid-principal{grid-template-columns:1fr;}.resultado-grid{grid-template-columns:1fr;}.acoes-grid{grid-template-columns:1fr 1fr;}.card-full{grid-column:1;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🌿</div>
+    <div><div class="logo-text">AgroScan</div><div class="logo-sub">IA · Plantas Daninhas</div></div>
+  </div>
+  <div class="header-badge">Protótipo Acadêmico</div>
+</header>
+<main>
+  <h1 class="page-title">Identificação de Plantas Daninhas</h1>
+  <p class="page-subtitle">Análise por imagem com IA — milho e soja · Controle precoce · Redução de herbicidas</p>
+  <div class="grid-principal">
+
+    <!-- CARD IMAGEM -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon verde">📷</div>
+        <div><div class="card-title">Imagem da Lavoura</div></div>
+      </div>
+      <div class="card-body">
+        <div class="exemplos-titulo">Selecione um exemplo de planta daninha:</div>
+        <div class="exemplos-grid" id="exemplosGrid"></div>
+        <div class="divisor">ou envie sua própria foto</div>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept="image/*">
+          <div style="font-size:26px;margin-bottom:5px">📁</div>
+          <div class="upload-text">Clique aqui para selecionar imagem</div>
+          <div class="upload-hint">JPG ou PNG do campo, drone ou smartphone</div>
+        </div>
+        <div id="preview-area">
+          <img id="preview-img" alt="Imagem selecionada">
+          <div class="preview-label" id="preview-label"></div>
+        </div>
+        <div class="loading-bar" id="loadingBar"><div class="loading-progress" id="loadingProgress"></div></div>
+        <div class="loading-status" id="loadingStatus"></div>
+        <div id="resultado">
+          <div class="resultado-grid">
+            <div class="resultado-item" id="res-especie">
+              <div class="resultado-label">Espécie identificada</div>
+              <div class="resultado-valor" id="val-especie">—</div>
+              <div class="resultado-detalhe" id="val-cientifico">—</div>
+              <div class="confianca-bar"><div class="confianca-fill" id="barra-confianca" style="width:0%"></div></div>
+              <div class="resultado-detalhe" id="val-confianca"></div>
+            </div>
+            <div class="resultado-item alerta">
+              <div class="resultado-label">Estágio de desenvolvimento</div>
+              <div class="resultado-valor" id="val-estagio">—</div>
+              <div class="resultado-detalhe" id="val-estagio-desc">—</div>
+            </div>
+            <div class="resultado-item info">
+              <div class="resultado-label">Cultura afetada</div>
+              <div class="resultado-valor" id="val-cultura">—</div>
+              <div class="resultado-detalhe" id="val-cultura-desc">—</div>
+            </div>
+            <div class="resultado-item perigo">
+              <div class="resultado-label">Densidade de infestação</div>
+              <div class="resultado-valor" id="val-densidade">—</div>
+              <div class="resultado-detalhe" id="val-area">—</div>
+            </div>
+          </div>
+          <div class="recomendacao-box">
+            <div class="rec-titulo">💡 Recomendação agronômica</div>
+            <div class="rec-texto" id="val-recomendacao">—</div>
+            <div class="rec-tags" id="val-tags"></div>
+          </div>
+          <div class="acoes-grid">
+            <button class="acao-btn" onclick="novaAnalise()"><span class="acao-icon">🔄</span>Nova análise</button>
+            <button class="acao-btn" onclick="exportarRelatorio()"><span class="acao-icon">📄</span>Exportar</button>
+            <button class="acao-btn" onclick="salvarHistorico()"><span class="acao-icon">💾</span>Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD VARIÁVEIS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon terra">⚙️</div>
+        <div><div class="card-title">Variáveis da Análise</div></div>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <label class="form-label">Cultura agrícola</label>
+          <div class="select-wrap">
+            <select class="form-select" id="cultura">
+              <option value="">Selecione...</option>
+              <option value="milho">🌽 Milho</option>
+              <option value="soja">🫘 Soja</option>
+              <option value="milho_soja">🌽🫘 Rotação milho/soja</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Estágio da cultura</label>
+          <div class="select-wrap">
+            <select class="form-select" id="estagio-cultura">
+              <option value="emergencia">Emergência / Germinação</option>
+              <option value="vegetativo">Estágio vegetativo (V1–V6)</option>
+              <option value="pre-florescimento">Pré-florescimento</option>
+              <option value="florescimento">Florescimento</option>
+              <option value="enchimento">Enchimento de grãos</option>
+              <option value="maturacao">Maturação</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Área total da lavoura</label>
+          <input type="text" class="form-input" id="area" placeholder="Ex: 50 hectares">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Densidade de infestação estimada</label>
+          <div class="slider-wrap">
+            <input type="range" class="form-range" id="densidade-slider" min="0" max="100" value="40" oninput="atualizarSlider(this)">
+            <span class="range-value" id="densidade-val">40%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span style="font-size:11px;color:var(--cinza-claro)">Baixa</span>
+            <span style="font-size:11px;color:var(--cinza-claro)">Moderada</span>
+            <span style="font-size:11px;color:var(--cinza-claro)">Alta</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Histórico de herbicidas</label>
+          <div class="select-wrap">
+            <select class="form-select" id="historico-herb">
+              <option value="sem">Sem aplicação recente</option>
+              <option value="glifosato">Glifosato</option>
+              <option value="atrazina">Atrazina</option>
+              <option value="multiplo">Múltiplos herbicidas</option>
+              <option value="resistente">Suspeita de resistência</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Período do ano</label>
+          <div class="select-wrap">
+            <select class="form-select" id="periodo">
+              <option value="safra">Safra (Outubro–Março)</option>
+              <option value="safrinha">Safrinha (Fevereiro–Junho)</option>
+              <option value="entressafra">Entressafra / Pousio</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-analisar" id="btnAnalisar" onclick="analisar()">🔍 Analisar com IA</button>
+      </div>
+    </div>
+
+    <!-- MAPA -->
+    <div class="card card-full" id="card-mapa" style="display:none">
+      <div class="card-header">
+        <div class="card-icon amarelo">🗺️</div>
+        <div><div class="card-title">Mapa de Infestação Simulado</div></div>
+      </div>
+      <div class="card-body">
+        <div class="mapa-container" id="mapa-grid"></div>
+        <div class="mapa-legenda">
+          <div class="leg-item"><div class="leg-cor" style="background:#2D5A27"></div>Cultura saudável</div>
+          <div class="leg-item"><div class="leg-cor" style="background:#D4AC0D"></div>Infestação leve</div>
+          <div class="leg-item"><div class="leg-cor" style="background:#E67E22"></div>Moderada</div>
+          <div class="leg-item"><div class="leg-cor" style="background:#C0392B"></div>Severa</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div class="card card-full">
+      <div class="card-header">
+        <div class="card-icon azul">📋</div>
+        <div><div class="card-title">Histórico de Análises</div></div>
+      </div>
+      <div class="card-body">
+        <div id="historico-lista"><div class="historico-vazio">📂 Nenhuma análise salva ainda. Faça uma análise e clique em "Salvar".</div></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const ESPECIES={milho:[{id:'capim-colchao',nome:"Capim-colchão",cientifico:"Digitaria horizontalis",estagio:"Inicial (2–4 folhas)",estagioDesc:"Alta competitividade com a cultura",densidadeLabel:d=>d>60?"Alta (crítico)":d>30?"Moderada":"Baixa",recomendacao:"Aplicar herbicida pós-emergente graminicida seletivo para milho (Nicossulfuron ou Tembotrione) antes de V4. Considerar cultivar tolerante.",tags:["Pós-emergência","Graminicida","Controle precoce","Nicossulfuron"]},{id:'caruru',nome:"Caruru-de-mancha",cientifico:"Amaranthus hybridus",estagio:"Plântula (2–6cm)",estagioDesc:"Período crítico de interferência",densidadeLabel:d=>d>70?"Severa (resistência possível)":d>40?"Alta":"Moderada",recomendacao:"Uso de atrazina em pré-emergência ou herbicidas inibidores de ALS. Atenção: populações com suspeita de resistência ao glifosato no Centro-Oeste.",tags:["Pré-emergência","Atrazina","Latifoliada","Monitorar resistência"]},{id:'trapoeraba',nome:"Trapoeraba",cientifico:"Commelina benghalensis",estagio:"Pós-emergente (4–8 folhas)",estagioDesc:"Difícil controle químico",densidadeLabel:d=>d>50?"Alta (mecânico recomendado)":"Moderada",recomendacao:"Difícil controle exclusivo com herbicidas. Combinar roçada mecânica + herbicida de contato (carfentrazone). Evitar mobilização excessiva do solo.",tags:["Controle mecânico","Integrado","Carfentrazone"]}],soja:[{id:'buva',nome:"Buva",cientifico:"Conyza bonariensis",estagio:"Roseta (8–12 folhas)",estagioDesc:"Alta competitividade — controle urgente",densidadeLabel:d=>d>50?"Crítica (resistência ao glifosato)":d>25?"Alta":"Baixa",recomendacao:"Resistência múltipla ao glifosato confirmada no Brasil. Usar mistura de herbicidas com diferentes mecanismos (2,4-D + chlorimuron) em pré-semeadura.",tags:["Resistente ao glifosato","2,4-D","Pré-semeadura","URGENTE"]},{id:'capim-amargoso',nome:"Capim-amargoso",cientifico:"Digitaria insularis",estagio:"Perfilhando (3–5 perfilhos)",estagioDesc:"Perda alta acima de 5 plantas/m²",densidadeLabel:d=>d>40?"Alta (>5 plantas/m²)":"Tolerável",recomendacao:"Controle preferencial em pré-semeadura com dessecante. Pós-emergência: graminicidas específicos (Haloxifope ou Cletodim).",tags:["Dessecante","Haloxifope","Graminicida"]},{id:'leiteiro',nome:"Leiteiro",cientifico:"Euphorbia heterophylla",estagio:"Juvenil (2–4 folhas)",estagioDesc:"Altamente adaptado ao sistema soja",densidadeLabel:d=>d>35?"Alta — interferência severa":"Tolerável com monitoramento",recomendacao:"Usar lactofen ou fomesafen em pós-emergência na soja. Eficácia reduz acima de 4 folhas. Rotação de culturas recomendada.",tags:["Lactofen","Fomesafen","Pós-emergência"]}]};
+
+const EXEMPLOS=[
+  {id:'capim-colchao',label:'Capim-colchão',cultura:'Milho',especieKey:'capim-colchao',culturaDe:'milho',svg:'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#C8E6C0"/><ellipse cx="40" cy="58" rx="28" ry="16" fill="#4CAF50" opacity="0.4"/><line x1="40" y1="65" x2="40" y2="28" stroke="#2E7D32" stroke-width="2.5" stroke-linecap="round"/><path d="M40 45 Q56 36 62 24" stroke="#388E3C" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M40 50 Q24 41 18 29" stroke="#388E3C" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M40 38 Q53 30 55 20" stroke="#43A047" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="62" cy="24" rx="7" ry="3.5" fill="#8BC34A" transform="rotate(-30 62 24)"/><ellipse cx="18" cy="29" rx="7" ry="3.5" fill="#8BC34A" transform="rotate(30 18 29)"/><text x="40" y="77" text-anchor="middle" font-size="7" fill="#1B5E20" font-family="sans-serif">Milho</text></svg>'},
+  {id:'caruru',label:'Caruru-de-mancha',cultura:'Milho',especieKey:'caruru',culturaDe:'milho',svg:'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#DCEDC8"/><line x1="40" y1="70" x2="40" y2="18" stroke="#558B2F" stroke-width="3" stroke-linecap="round"/><ellipse cx="40" cy="33" rx="15" ry="9" fill="#7CB342" transform="rotate(-15 40 33)"/><ellipse cx="40" cy="45" rx="17" ry="10" fill="#8BC34A" transform="rotate(10 40 45)"/><ellipse cx="40" cy="26" rx="11" ry="6" fill="#9CCC65" transform="rotate(-5 40 26)"/><circle cx="40" cy="18" r="5" fill="#F9A825"/><text x="40" y="77" text-anchor="middle" font-size="7" fill="#1B5E20" font-family="sans-serif">Milho</text></svg>'},
+  {id:'trapoeraba',label:'Trapoeraba',cultura:'Milho',especieKey:'trapoeraba',culturaDe:'milho',svg:'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#E8F5E9"/><path d="M25 68 Q30 52 40 45 Q50 38 55 24" stroke="#388E3C" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 62 Q28 54 35 50 Q42 46 45 36" stroke="#43A047" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="42" cy="44" rx="11" ry="6" fill="#66BB6A" transform="rotate(20 42 44)"/><ellipse cx="33" cy="52" rx="10" ry="5.5" fill="#81C784" transform="rotate(-10 33 52)"/><circle cx="54" cy="25" r="6" fill="#4FC3F7"/><circle cx="54" cy="25" r="3" fill="#E1F5FE"/><text x="40" y="77" text-anchor="middle" font-size="7" fill="#1B5E20" font-family="sans-serif">Milho</text></svg>'},
+  {id:'buva',label:'Buva',cultura:'Soja',especieKey:'buva',culturaDe:'soja',svg:'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#F1F8E9"/><line x1="40" y1="70" x2="40" y2="14" stroke="#689F38" stroke-width="2" stroke-linecap="round"/><ellipse cx="40" cy="40" rx="19" ry="5" fill="#AED581" transform="rotate(-20 40 40)"/><ellipse cx="40" cy="49" rx="21" ry="5" fill="#C5E1A5" transform="rotate(15 40 49)"/><ellipse cx="40" cy="32" rx="16" ry="4" fill="#DCEDC8" transform="rotate(-5 40 32)"/><ellipse cx="40" cy="24" rx="11" ry="3" fill="#E8F5E9"/><circle cx="40" cy="14" r="5" fill="#FFFDE7"/><text x="40" y="77" text-anchor="middle" font-size="7" fill="#1B5E20" font-family="sans-serif">Soja</text></svg>'},
+  {id:'capim-amargoso',label:'Capim-amargoso',cultura:'Soja',especieKey:'capim-amargoso',culturaDe:'soja',svg:'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#E0F2F1"/><path d="M35 70 Q36 54 40 40 Q44 26 48 14" stroke="#00796B" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M30 70 Q32 58 38 48 Q42 38 50 28" stroke="#26A69A" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M45 70 Q44 56 42 44 Q40 32 36 20" stroke="#4DB6AC" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="48" cy="15" rx="5" ry="9" fill="#80CBC4" transform="rotate(10 48 15)"/><text x="40" y="77" text-anchor="middle" font-size="7" fill="#004D40" font-family="sans-serif">Soja</text></svg>'},
+  {id:'leiteiro',label:'Leiteiro',cultura:'Soja',especieKey:'leiteiro',culturaDe:'soja',svg:'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#FFF8E1"/><line x1="40" y1="70" x2="40" y2="20" stroke="#F57F17" stroke-width="2.5" stroke-linecap="round"/><path d="M40 55 Q28 50 22 40" stroke="#F9A825" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M40 45 Q54 40 58 30" stroke="#F9A825" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="22" cy="39" rx="11" ry="7" fill="#FFD54F" transform="rotate(-10 22 39)"/><ellipse cx="58" cy="29" rx="11" ry="7" fill="#FFCA28" transform="rotate(15 58 29)"/><circle cx="40" cy="20" r="5" fill="#FF6F00" opacity="0.7"/><text x="40" y="77" text-anchor="middle" font-size="7" fill="#E65100" font-family="sans-serif">Soja</text></svg>'}
+];
+
+let exemploSelecionado=null,imagemAtual=null,resultadoAtual=null,historico=[];
+
+function renderExemplos(){
+  document.getElementById('exemplosGrid').innerHTML=EXEMPLOS.map(ex=>`
+    <div class="exemplo-card" id="ex-${ex.id}" onclick="selecionarExemplo('${ex.id}')">
+      <div class="exemplo-img">${ex.svg}</div>
+      <div class="exemplo-info"><div class="exemplo-nome">${ex.label}</div><div class="exemplo-cultura">${ex.cultura}</div></div>
+    </div>`).join('');
+}
+
+function selecionarExemplo(id){
+  document.querySelectorAll('.exemplo-card').forEach(c=>c.classList.remove('selecionado'));
+  const ex=EXEMPLOS.find(e=>e.id===id);if(!ex)return;
+  exemploSelecionado=ex;
+  document.getElementById('ex-'+id).classList.add('selecionado');
+  const blob=new Blob([ex.svg],{type:'image/svg+xml'});
+  const url=URL.createObjectURL(blob);
+  document.getElementById('preview-img').src=url;
+  imagemAtual=url;
+  document.getElementById('preview-label').textContent=ex.label+' — '+ex.cultura;
+  document.getElementById('preview-area').style.display='block';
+  document.getElementById('resultado').style.display='none';
+  document.getElementById('resultado').classList.remove('ativo');
+  if(ex.culturaDe)document.getElementById('cultura').value=ex.culturaDe;
+}
+
+document.getElementById('fileInput').addEventListener('change',function(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    imagemAtual=ev.target.result;exemploSelecionado=null;
+    document.querySelectorAll('.exemplo-card').forEach(c=>c.classList.remove('selecionado'));
+    document.getElementById('preview-img').src=ev.target.result;
+    document.getElementById('preview-label').textContent=file.name;
+    document.getElementById('preview-area').style.display='block';
+    document.getElementById('resultado').style.display='none';
+    document.getElementById('resultado').classList.remove('ativo');
+  };reader.readAsDataURL(file);
+});
+
+const zone=document.getElementById('uploadZone');
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.style.borderColor='var(--verde-claro)';});
+zone.addEventListener('dragleave',()=>zone.style.borderColor='');
+zone.addEventListener('drop',e=>{
+  e.preventDefault();zone.style.borderColor='';
+  const file=e.dataTransfer.files[0];
+  if(file&&file.type.startsWith('image/')){const input=document.getElementById('fileInput');const dt=new DataTransfer();dt.items.add(file);input.files=dt.files;input.dispatchEvent(new Event('change'));}
+});
+
+function atualizarSlider(input){
+  document.getElementById('densidade-val').textContent=input.value+'%';
+  input.style.setProperty('--val',input.value+'%');
+}
+
+function analisar(){
+  if(!imagemAtual){alert('Selecione um exemplo ou envie uma imagem primeiro!');return;}
+  const cultura=document.getElementById('cultura').value;
+  const area=document.getElementById('area').value||'—';
+  const densidade=parseInt(document.getElementById('densidade-slider').value);
+  const btn=document.getElementById('btnAnalisar');
+  btn.disabled=true;btn.innerHTML='<span class="pulsando">⏳</span> Processando imagem...';
+  const bar=document.getElementById('loadingBar');const prog=document.getElementById('loadingProgress');const status=document.getElementById('loadingStatus');
+  bar.classList.add('ativo');status.classList.add('ativo');
+  const etapas=[[15,"Pré-processando imagem..."],[35,"Extraindo características visuais..."],[55,"Comparando com banco de espécies..."],[75,"Avaliando estágio de desenvolvimento..."],[90,"Gerando recomendação agronômica..."],[100,"Análise concluída!"]];
+  let i=0;
+  const iv=setInterval(()=>{
+    if(i>=etapas.length){clearInterval(iv);setTimeout(()=>mostrarResultado(cultura,area,densidade),300);return;}
+    prog.style.width=etapas[i][0]+'%';status.textContent=etapas[i][1];i++;
+  },420);
+}
+
+function mostrarResultado(cultura,area,densidade){
+  let especie;
+  if(exemploSelecionado){
+    const pool=ESPECIES[exemploSelecionado.culturaDe]||[];
+    especie=pool.find(e=>e.id===exemploSelecionado.especieKey)||pool[0];
+  }else{
+    const pool=(cultura&&ESPECIES[cultura])?ESPECIES[cultura]:ESPECIES.milho;
+    especie=pool[Math.floor(Math.random()*pool.length)];
+  }
+  const confianca=74+Math.floor(Math.random()*22);
+  resultadoAtual={especie,confianca,cultura,area,densidade};
+  document.getElementById('val-especie').textContent=especie.nome;
+  document.getElementById('val-cientifico').textContent=especie.cientifico;
+  document.getElementById('val-confianca').textContent='Confiança da IA: '+confianca+'%';
+  document.getElementById('barra-confianca').style.width=confianca+'%';
+  document.getElementById('val-estagio').textContent=especie.estagio;
+  document.getElementById('val-estagio-desc').textContent=especie.estagioDesc;
+  const ct={milho:'🌽 Milho',soja:'🫘 Soja',milho_soja:'🌽🫘 Rotação','':"Não informada"}[cultura]||cultura;
+  document.getElementById('val-cultura').textContent=ct;
+  document.getElementById('val-cultura-desc').textContent='Área: '+area;
+  document.getElementById('val-densidade').textContent=especie.densidadeLabel(densidade);
+  document.getElementById('val-area').textContent='Infestação declarada: '+densidade+'% da área';
+  document.getElementById('val-recomendacao').textContent=especie.recomendacao;
+  document.getElementById('val-tags').innerHTML=especie.tags.map(t=>`<span class="rec-tag">${t}</span>`).join('');
+  document.getElementById('res-especie').className='resultado-item'+(confianca>=85?'':confianca>=72?' alerta':' perigo');
+  document.getElementById('loadingBar').classList.remove('ativo');
+  document.getElementById('loadingStatus').classList.remove('ativo');
+  const res=document.getElementById('resultado');res.style.display='block';res.classList.add('ativo','fade-in');
+  gerarMapa(densidade);document.getElementById('card-mapa').style.display='block';
+  const btn=document.getElementById('btnAnalisar');btn.disabled=false;btn.innerHTML='🔍 Analisar com IA';
+}
+
+function gerarMapa(inf){
+  const grid=document.getElementById('mapa-grid');grid.innerHTML='';
+  for(let i=0;i<240;i++){
+    const cell=document.createElement('div');cell.className='mapa-cell';
+    const r=Math.random()*100;let cor;
+    if(r<100-inf)cor=`hsl(${105+Math.random()*20},${55+Math.random()*20}%,${30+Math.random()*15}%)`;
+    else if(r<100-inf/2)cor=`hsl(${45+Math.random()*10},75%,${50+Math.random()*10}%)`;
+    else if(r<100-inf/4)cor=`hsl(${25+Math.random()*10},80%,${55+Math.random()*10}%)`;
+    else cor=`hsl(${5+Math.random()*10},72%,${45+Math.random()*10}%)`;
+    cell.style.background=cor;grid.appendChild(cell);
+  }
+}
+
+function salvarHistorico(){
+  if(!resultadoAtual){alert('Faça uma análise primeiro!');return;}
+  historico.unshift({...resultadoAtual,data:new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),imagem:imagemAtual});
+  renderHistorico();alert('✅ Análise salva no histórico!');
+}
+
+function renderHistorico(){
+  const lista=document.getElementById('historico-lista');
+  if(!historico.length){lista.innerHTML='<div class="historico-vazio">📂 Nenhuma análise salva ainda.</div>';return;}
+  lista.innerHTML=historico.map((item)=>`
+    <div class="historico-item fade-in">
+      <div class="historico-thumb">${item.imagem?`<img src="${item.imagem}" alt="">`:'🌿'}</div>
+      <div class="historico-info"><div class="historico-especie">${item.especie.nome}</div><div class="historico-meta">${item.especie.cientifico} · ${item.data}</div></div>
+      <div class="historico-badge">${item.confianca}%</div>
+    </div>`).join('');
+}
+
+function novaAnalise(){
+  document.getElementById('resultado').style.display='none';
+  document.getElementById('resultado').classList.remove('ativo');
+  document.getElementById('preview-area').style.display='none';
+  document.getElementById('card-mapa').style.display='none';
+  document.getElementById('fileInput').value='';
+  document.querySelectorAll('.exemplo-card').forEach(c=>c.classList.remove('selecionado'));
+  exemploSelecionado=null;imagemAtual=null;resultadoAtual=null;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function exportarRelatorio(){
+  if(!resultadoAtual){alert('Faça uma análise primeiro!');return;}
+  const{especie,confianca,cultura,area,densidade}=resultadoAtual;
+  const t=`RELATÓRIO DE ANÁLISE — AgroScan IA\n${'='.repeat(36)}\nData: ${new Date().toLocaleString('pt-BR')}\n\nIDENTIFICAÇÃO\n  Espécie: ${especie.nome}\n  Nome científico: ${especie.cientifico}\n  Confiança da IA: ${confianca}%\n\nVARIÁVEIS\n  Cultura: ${cultura||'Não informada'}\n  Área: ${area}\n  Estágio: ${especie.estagio}\n  Densidade: ${densidade}% — ${especie.densidadeLabel(densidade)}\n\nRECOMENDAÇÃO\n  ${especie.recomendacao}\n\nTags: ${especie.tags.join(', ')}\n\n${'='.repeat(36)}\nProtótipo acadêmico — não substitui receituário agronômico.\nGerado por AgroScan · Softwares na Gestão de Fatores de Produção`;
+  const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(t);a.download=`agroscan_${Date.now()}.txt`;a.click();
+}
+
+renderExemplos();
+</script>
+</body>
+</html>
