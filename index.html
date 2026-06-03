@@ -221,6 +221,7 @@ table.susc tr:hover{background:#EDF5EB;}
   <div class="tab" onclick="switchTab('enc',this)">📚 Enciclopédia</div>
   <div class="tab" onclick="switchTab('hist',this)">📋 Histórico</div>
   <div class="tab" onclick="switchTab('dash',this)">📊 Dashboard</div>
+  <div class="tab" onclick="switchTab('guia',this)">📖 Guia</div>
 </div>
 <main>
 
@@ -425,6 +426,98 @@ table.susc tr:hover{background:#EDF5EB;}
   </div>
 </div>
 </main>
+
+<!-- ABA GUIA -->
+<div id="guia" class="tc">
+  <h1 class="pt">Guia de Uso</h1>
+  <p class="ps">Como utilizar o AgroScan no dia a dia da lavoura.</p>
+  <div style="max-width:740px;display:flex;flex-direction:column;gap:16px">
+
+    <div class="card">
+      <div class="ch"><div class="ci g">🌿</div><div><div class="ct">O que é o AgroScan</div></div></div>
+      <div class="cb" style="font-size:13px;color:var(--c);line-height:1.7">
+        AgroScan é uma ferramenta de identificação de plantas daninhas para lavouras de milho e soja. Você tira uma foto da planta no campo, o aplicativo usa a IA do PlantNet para identificar a espécie e cruza o resultado com o banco de dados do Manual Lorenzi (7ª edição), entregando a ficha técnica completa com controle químico recomendado.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ci b">📱</div><div><div class="ct">As 4 abas do aplicativo</div></div></div>
+      <div class="cb">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--c)"><span style="font-size:16px">🔍</span><div><b style="color:var(--ce)">Análise</b> — onde você identifica plantas enviando uma foto</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--c)"><span style="font-size:16px">📚</span><div><b style="color:var(--ce)">Enciclopédia</b> — consulta manual das 20 espécies cadastradas do Lorenzi</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--c)"><span style="font-size:16px">📋</span><div><b style="color:var(--ce)">Histórico</b> — análises que você salvou na sessão</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--c)"><span style="font-size:16px">📊</span><div><b style="color:var(--ce)">Dashboard</b> — resumo estatístico das análises feitas</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ci t">🔍</div><div><div class="ct">Como identificar uma planta — passo a passo</div></div></div>
+      <div class="cb">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="min-width:24px;height:24px;background:var(--v);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div>
+            <div style="font-size:12px;color:var(--c);line-height:1.6"><b style="color:var(--ce)">Envie a foto</b> — arraste ou clique na área verde para selecionar a imagem. Funciona com foto tirada na hora pelo celular ou foto já salva. Quanto mais nítida e focada nas folhas, melhor.</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="min-width:24px;height:24px;background:var(--v);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div>
+            <div style="font-size:12px;color:var(--c);line-height:1.6"><b style="color:var(--ce)">Preencha as variáveis</b> na coluna da direita: cultura (milho, soja ou rotação), estágio, área em hectares, densidade de infestação pelo slider, sistema de plantio, histórico de herbicidas e tipo de solo.</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="min-width:24px;height:24px;background:var(--v);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</div>
+            <div style="font-size:12px;color:var(--c);line-height:1.6"><b style="color:var(--ce)">Clique em "Identificar com PlantNet"</b> — aguarde alguns segundos enquanto a IA analisa a imagem.</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="min-width:24px;height:24px;background:var(--v);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</div>
+            <div style="font-size:12px;color:var(--c);line-height:1.6"><b style="color:var(--ce)">Leia o resultado:</b> a barra de confiança mostra a certeza da IA; alertas amarelos/vermelhos indicam resistência confirmada a herbicidas; a ficha Lorenzi traz características da planta e a tabela de suscetibilidade química; o mapa simula a distribuição da infestação; a perda estimada calcula o impacto na produtividade.</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="min-width:24px;height:24px;background:var(--v);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">5</div>
+            <div style="font-size:12px;color:var(--c);line-height:1.6"><b style="color:var(--ce)">Botões de ação:</b> <b>Nova</b> limpa e reinicia; <b>Exportar</b> baixa um laudo .txt completo para enviar ao agrônomo ou arquivar; <b>Salvar</b> guarda a análise no Histórico.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ci a">📊</div><div><div class="ct">Tabela de Suscetibilidade — como ler</div></div></div>
+      <div class="cb">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:var(--ce);color:white"><th style="padding:7px 10px;text-align:left">Letra</th><th style="padding:7px 10px;text-align:left">Significado</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #EBF2E9"><td style="padding:6px 10px"><span class="sA">A</span></td><td style="padding:6px 10px;color:var(--c)">Altamente eficaz (&gt;95%)</td></tr>
+            <tr style="border-bottom:1px solid #EBF2E9;background:#F5FAF4"><td style="padding:6px 10px"><span class="sS">S</span></td><td style="padding:6px 10px;color:var(--c)">Suscetível (85–95%)</td></tr>
+            <tr style="border-bottom:1px solid #EBF2E9"><td style="padding:6px 10px"><span class="sM">M</span></td><td style="padding:6px 10px;color:var(--c)">Moderado (50–85%)</td></tr>
+            <tr style="border-bottom:1px solid #EBF2E9;background:#F5FAF4"><td style="padding:6px 10px"><span class="sP">P</span></td><td style="padding:6px 10px;color:var(--c)">Pouco eficaz (&lt;50%)</td></tr>
+            <tr style="border-bottom:1px solid #EBF2E9"><td style="padding:6px 10px"><span class="sT">T</span></td><td style="padding:6px 10px;color:var(--c)">Tolerante</td></tr>
+            <tr style="border-bottom:1px solid #EBF2E9;background:#F5FAF4"><td style="padding:6px 10px"><span class="sDot">•</span></td><td style="padding:6px 10px;color:var(--c)">Não recomendável</td></tr>
+            <tr><td style="padding:6px 10px"><span class="sDash">—</span></td><td style="padding:6px 10px;color:var(--c)">Sem informação disponível</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ci r">💡</div><div><div class="ct">Dicas para melhores resultados</div></div></div>
+      <div class="cb">
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--c);line-height:1.6"><span>📷</span><span>Tire foto próxima da planta, focando nas folhas — evite fotos de longe com várias plantas misturadas.</span></div>
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--c);line-height:1.6"><span>🔄</span><span>Se a IA não identificar na primeira vez, tente de outro ângulo ou com foco nas flores ou frutos.</span></div>
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--c);line-height:1.6"><span>🔍</span><span>Se a espécie não estiver no banco Lorenzi, o app mostra sugestões próximas para você escolher manualmente.</span></div>
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--c);line-height:1.6"><span>📚</span><span>O banco tem 20 espécies das mais comuns em milho e soja no Brasil, extraídas do Manual Lorenzi 7ª edição.</span></div>
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--c);line-height:1.6"><span>👨‍🌾</span><span>Consulte sempre um Engenheiro Agrônomo credenciado antes de aplicar herbicidas.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:10px;color:var(--cc);text-align:center;padding:8px 0;line-height:1.8">
+      Fonte: Manual de Identificação e Controle de Plantas Daninhas — Harri Lorenzi, 7ª Edição<br>
+      IA de identificação: PlantNet API
+    </div>
+
+  </div>
+</div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modal" onclick="fecharModal(event)">
