@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroScan — Reconhecimento Real por IA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --v:#1E4D18;--vm:#2D6B22;--vc:#5A9E4E;--vp:#A8D09E;--vbg:#EDF5EB;
+  --ce:#111A10;--c:#3D5239;--cc:#7A9275;--br:#F5FAF4;
+  --ft:'DM Serif Display',serif;--fb:'Outfit',sans-serif;--fm:'DM Mono',monospace;
+  --shadow:0 2px 12px rgba(30,77,24,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fb);background:var(--br);color:var(--ce);min-height:100vh;}
+header{background:var(--v);color:white;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.25);}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:34px;height:34px;background:var(--vc);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.logo-text{font-family:var(--ft);font-size:21px;}
+.logo-sub{font-size:10px;font-weight:300;opacity:.65;letter-spacing:1.2px;text-transform:uppercase;}
+.hbadges{display:flex;gap:6px;}
+.hb{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;font-size:10px;}
+.hb.ai{background:rgba(90,158,78,.3);border-color:rgba(90,158,78,.5);}
+.tabs{display:flex;border-bottom:2px solid #D8E8D5;background:white;position:sticky;top:58px;z-index:90;padding:0 16px;overflow-x:auto;}
+.tab{padding:10px 14px;font-size:12px;font-weight:500;color:var(--cc);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;}
+.tab.on{color:var(--v);border-bottom-color:var(--v);font-weight:600;}
+.tc{display:none;} .tc.on{display:block;}
+main{max-width:1100px;margin:0 auto;padding:22px 16px 60px;}
+.pt{font-family:var(--ft);font-size:28px;color:var(--v);margin-bottom:4px;}
+.ps{color:var(--c);font-size:13px;font-weight:300;margin-bottom:20px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.gfull{grid-column:1/-1;}
+.card{background:white;border-radius:13px;border:1.5px solid #D8E8D5;overflow:hidden;box-shadow:var(--shadow);}
+.ch{padding:12px 16px 10px;border-bottom:1px solid #EBF2E9;display:flex;align-items:center;gap:8px;}
+.ci{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.ci.g{background:var(--vbg);} .ci.t{background:#F5EDE5;} .ci.a{background:#FDF8E1;} .ci.b{background:#E8F0FE;} .ci.r{background:#F0EAFF;}
+.ct{font-size:11px;font-weight:600;color:var(--ce);letter-spacing:.3px;text-transform:uppercase;}
+.cb{padding:16px;}
+
+/* UPLOAD AREA */
+.upload-area{border:2px dashed var(--vp);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;background:var(--vbg);position:relative;transition:all .25s;}
+.upload-area:hover,.upload-area.drag{border-color:var(--vc);background:#E3F0DF;}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:36px;margin-bottom:8px;}
+.upload-title{font-size:14px;font-weight:600;color:var(--v);margin-bottom:4px;}
+.upload-sub{font-size:11px;color:var(--cc);}
+#preview-wrap{display:none;position:relative;margin-top:12px;}
+#preview-img{width:100%;border-radius:10px;max-height:240px;object-fit:cover;display:block;}
+.preview-overlay{position:absolute;top:8px;right:8px;}
+.clear-btn{background:rgba(0,0,0,.6);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:var(--fb);}
+.clear-btn:hover{background:rgba(0,0,0,.8);}
+
+/* BOTÃO ANALISAR */
+.btn-analisar{width:100%;padding:14px;background:var(--v);color:white;border:none;border-radius:10px;font-family:var(--fb);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;letter-spacing:.3px;}
+.btn-analisar:hover{background:var(--vm);transform:translateY(-1px);box-shadow:0 4px 14px rgba(30,77,24,.25);}
+.btn-analisar:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* ESTADO DE CARREGAMENTO */
+.loading-state{display:none;padding:20px;text-align:center;}
+.loading-state.on{display:block;}
+.loading-spinner{width:40px;height:40px;border:3px solid var(--vbg);border-top-color:var(--vc);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-msg{font-size:13px;color:var(--c);font-style:italic;}
+.loading-steps{margin-top:8px;font-size:11px;color:var(--cc);}
+
+/* RESULTADO */
+#resultado{display:none;}
+#resultado.on{display:block;}
+
+/* BADGE DE CONFIANÇA */
+.conf-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.conf-label{font-size:11px;font-weight:600;color:var(--c);text-transform:uppercase;letter-spacing:.5px;min-width:90px;}
+.conf-track{flex:1;height:6px;background:#D8E8D5;border-radius:3px;overflow:hidden;}
+.conf-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--vc),var(--v));transition:width 1.2s ease;}
+.conf-pct{font-family:var(--fm);font-size:13px;font-weight:600;color:var(--v);min-width:36px;text-align:right;}
+
+/* ALERTA RESISTÊNCIA */
+.alert-res{background:#FFF3CD;border:1.5px solid #F0B429;border-radius:8px;padding:10px 13px;margin-bottom:12px;display:flex;gap:8px;font-size:11px;color:#7A5000;line-height:1.5;}
+.alert-res.danger{background:#FDEDEC;border-color:#E74C3C;color:#7B241C;}
+
+/* CARD LORENZI */
+.lorenzi{border:1.5px solid #D8E8D5;border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.lor-head{background:var(--ce);color:white;padding:10px 14px;}
+.lor-nome{font-family:var(--ft);font-size:18px;font-style:italic;line-height:1.2;}
+.lor-cod{font-size:10px;color:rgba(255,255,255,.55);margin-top:3px;}
+.lor-pop{background:#EDF5EB;padding:7px 14px;font-size:11px;color:var(--c);border-bottom:1px solid #D8E8D5;}
+.lor-body{padding:13px 14px;}
+.lor-sec{margin-bottom:12px;}
+.lor-sec-t{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--v);margin-bottom:6px;}
+.lor-carac{font-size:12px;color:var(--c);line-height:1.65;}
+
+/* TABELA SUSCETIBILIDADE */
+.susc-wrap{overflow-x:auto;}
+table.susc{width:100%;border-collapse:collapse;font-size:10px;}
+table.susc th{background:var(--ce);color:white;padding:5px 7px;text-align:center;font-size:9px;font-weight:600;white-space:nowrap;}
+table.susc th:first-child{text-align:left;min-width:150px;}
+table.susc td{padding:4px 7px;border-bottom:1px solid #EBF2E9;text-align:center;}
+table.susc td:first-child{text-align:left;font-size:10px;color:var(--ce);}
+table.susc tr:nth-child(even){background:#F5FAF4;}
+table.susc tr:hover{background:#EDF5EB;}
+.sA{color:#1B5E20;font-weight:800;} .sS{color:#2E7D32;font-weight:700;} .sM{color:#E65100;font-weight:700;}
+.sP{color:#C62828;font-weight:700;} .sT{color:#B71C1C;font-weight:800;} .sDot{color:#555;} .sDash{color:#aaa;}
+.susc-leg{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:9px;color:var(--cc);}
+
+/* PAINÉIS DE INFO */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.info-box{border-radius:8px;padding:10px 12px;}
+.info-box.g{background:var(--vbg);border:1px solid #C8DFC4;}
+.info-box.al{background:#FEF9E7;border:1px solid #F5E07A;}
+.info-box.pe{background:#FDEDEC;border:1px solid #F0AEAE;}
+.info-box.in{background:#EBF5FB;border:1px solid #A9D0E3;}
+.info-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--cc);margin-bottom:3px;}
+.info-val{font-size:14px;font-weight:600;color:var(--ce);line-height:1.2;}
+.info-sub{font-size:10px;color:var(--cc);margin-top:2px;}
+
+/* AÇÕES */
+.acoes{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px;}
+.acao{padding:8px 6px;border:1.5px solid #D8E8D5;border-radius:7px;background:white;font-family:var(--fb);font-size:10px;font-weight:500;color:var(--c);cursor:pointer;text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.acao:hover{border-color:var(--vc);color:var(--v);background:var(--vbg);}
+.acao-i{font-size:16px;}
+
+/* FORM */
+.fr{margin-bottom:11px;}
+.fl{display:block;font-size:10px;font-weight:600;color:var(--c);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.fs,.fi{width:100%;padding:8px 12px;border:1.5px solid #D0E5CC;border-radius:7px;font-family:var(--fb);font-size:12px;color:var(--ce);background:white;outline:none;transition:border-color .2s;appearance:none;}
+.fs:focus,.fi:focus{border-color:var(--vc);box-shadow:0 0 0 3px rgba(90,158,78,.1);}
+.sw{position:relative;}
+.sw::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--cc);pointer-events:none;font-size:10px;}
+.slw{display:flex;align-items:center;gap:10px;}
+.sr{flex:1;-webkit-appearance:none;height:3px;border-radius:3px;background:linear-gradient(to right,var(--vc) 0%,var(--vc) var(--val,40%),#D0E5CC var(--val,40%));outline:none;cursor:pointer;}
+.sr::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--v);border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:pointer;}
+.rv2{font-family:var(--fm);font-size:11px;font-weight:500;color:var(--v);min-width:30px;text-align:right;}
+
+/* MAPA */
+.mapa-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:2px;margin-bottom:8px;}
+.mapa-cell{aspect-ratio:1;border-radius:2px;}
+.mapa-leg{display:flex;gap:12px;font-size:10px;color:var(--cc);flex-wrap:wrap;}
+.mapa-li{display:flex;align-items:center;gap:4px;}
+.mapa-lc{width:10px;height:10px;border-radius:2px;}
+
+/* ENCICLOPÉDIA */
+.enc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.enc-card{border:1.5px solid #D8E8D5;border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s;}
+.enc-card:hover{border-color:var(--vc);box-shadow:0 4px 10px rgba(30,77,24,.1);transform:translateY(-1px);}
+.enc-img{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;}
+.enc-img svg{width:100%;height:100%;}
+.enc-body{padding:10px;}
+.enc-nome{font-size:12px;font-weight:600;font-style:italic;color:var(--ce);margin-bottom:1px;}
+.enc-pop{font-size:10px;color:var(--cc);margin-bottom:5px;}
+.enc-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.enc-tag{font-size:9px;padding:2px 6px;border-radius:20px;background:var(--vbg);color:var(--v);font-weight:500;}
+.enc-tag.mi{background:#FFF8E0;color:#7A5000;} .enc-tag.so{background:#E8F5FB;color:#0D47A1;}
+.enc-tag.res{background:#FDEDEC;color:#C0392B;}
+
+/* HISTÓRICO */
+.hist-vazio{text-align:center;padding:24px;color:var(--cc);font-size:12px;}
+.hist-item{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid #EBF2E9;border-radius:7px;transition:background .15s;cursor:default;}
+.hist-item:hover{background:var(--vbg);}
+.hist-thumb{width:40px;height:40px;border-radius:7px;background:var(--vbg);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.hist-thumb img{width:100%;height:100%;object-fit:cover;}
+.hist-info{flex:1;min-width:0;}
+.hist-nome{font-size:11px;font-weight:600;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hist-meta{font-size:10px;color:var(--cc);}
+.hist-conf{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--vbg);color:var(--v);flex-shrink:0;}
+
+/* STATS */
+.stats-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.stat-card{flex:1;min-width:110px;background:white;border:1.5px solid #D8E8D5;border-radius:9px;padding:12px;text-align:center;}
+.stat-val{font-family:var(--fm);font-size:20px;font-weight:500;color:var(--v);}
+.stat-lbl{font-size:10px;color:var(--cc);margin-top:2px;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.on{display:flex;}
+.modal{background:white;border-radius:14px;max-width:740px;width:100%;max-height:90vh;overflow-y:auto;}
+.modal-head{padding:14px 16px 11px;border-bottom:1px solid #EBF2E9;display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:white;z-index:1;}
+.modal-tit{font-family:var(--ft);font-size:17px;color:var(--v);font-style:italic;}
+.modal-sub{font-size:10px;color:var(--cc);margin-top:2px;}
+.modal-close{width:26px;height:26px;border:none;background:var(--vbg);border-radius:50%;cursor:pointer;font-size:14px;flex-shrink:0;}
+.modal-body{padding:16px;}
+.m-susc{width:100%;border-collapse:collapse;font-size:10px;margin-top:8px;}
+.m-susc th{background:var(--ce);color:white;padding:5px 8px;text-align:center;font-size:9px;}
+.m-susc th:first-child{text-align:left;}
+.m-susc td{padding:4px 8px;border-bottom:1px solid #EBF2E9;text-align:center;}
+.m-susc td:first-child{text-align:left;font-size:11px;color:var(--ce);}
+.m-susc tr:nth-child(even){background:#F5FAF4;}
+
+/* IA NAO IDENTIFICOU */
+.nao-encontrado{background:#FEF9E7;border:1.5px solid #F0B429;border-radius:10px;padding:16px;text-align:center;margin-bottom:12px;}
+.nao-encontrado-icon{font-size:32px;margin-bottom:8px;}
+.nao-encontrado-title{font-size:14px;font-weight:600;color:var(--ce);margin-bottom:6px;}
+.nao-encontrado-desc{font-size:12px;color:var(--c);line-height:1.6;}
+.sugestoes{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px;}
+.sugestao-btn{padding:5px 12px;border:1.5px solid #D8E8D5;border-radius:20px;background:white;font-size:11px;color:var(--v);cursor:pointer;font-family:var(--fb);transition:all .2s;}
+.sugestao-btn:hover{background:var(--vbg);border-color:var(--vc);}
+
+/* RESPOSTA BRUTA DA IA */
+.ia-raw{background:#F5FAF4;border:1px solid #D8E8D5;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--c);line-height:1.7;}
+.ia-raw-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--vc);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fi{animation:fi .35s ease forwards;}
+@media(max-width:700px){.g2{grid-template-columns:1fr;}.info-grid{grid-template-columns:1fr;}.acoes{grid-template-columns:1fr 1fr;}.gfull{grid-column:1;}.enc-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🌿</div>
+    <div><div class="logo-text">AgroScan</div><div class="logo-sub">Manual Lorenzi + IA Real</div></div>
+  </div>
+  <div class="hbadges">
+    <span class="hb ai">🌍 PlantNet API</span>
+    <span class="hb">Lorenzi 7ª Ed.</span>
+    <span class="hb">20 espécies</span>
+  </div>
+</header>
+<div class="tabs">
+  <div class="tab on" onclick="switchTab('analise',this)">🔍 Análise</div>
+  <div class="tab" onclick="switchTab('enc',this)">📚 Enciclopédia</div>
+  <div class="tab" onclick="switchTab('hist',this)">📋 Histórico</div>
+  <div class="tab" onclick="switchTab('dash',this)">📊 Dashboard</div>
+</div>
+<main>
+
+<!-- ABA ANÁLISE -->
+<div id="analise" class="tc on">
+  <h1 class="pt">Identificação por IA Real</h1>
+  <p class="ps">Envie uma foto da planta — o PlantNet identifica a espécie (via servidor seguro) e o app busca a ficha no banco Lorenzi.</p>
+  <div class="g2">
+
+    <!-- ESQUERDA: FOTO + RESULTADO -->
+    <div class="card">
+      <div class="ch"><div class="ci g">📷</div><div><div class="ct">Imagem da Lavoura</div></div></div>
+      <div class="cb">
+        <div class="upload-area" id="uploadArea">
+          <input type="file" id="fileInput" accept="image/*">
+          <div class="upload-icon">🌱</div>
+          <div class="upload-title">Arraste ou clique para enviar foto</div>
+          <div class="upload-sub">JPG, PNG — foto do campo, drone ou smartphone</div>
+        </div>
+        <div id="preview-wrap">
+          <img id="preview-img" alt="Foto da planta">
+          <div class="preview-overlay"><button class="clear-btn" onclick="limparFoto()">✕ Nova foto</button></div>
+        </div>
+
+        <button class="btn-analisar" id="btnAnalisar" onclick="analisarComIA()">
+          🌍 Identificar com PlantNet
+        </button>
+
+        <!-- LOADING -->
+        <div class="loading-state" id="loadingState">
+          <div class="loading-spinner"></div>
+          <div class="loading-msg" id="loadingMsg">Enviando imagem para IA...</div>
+          <div class="loading-steps" id="loadingSteps"></div>
+        </div>
+
+        <!-- RESULTADO -->
+        <div id="resultado">
+          <!-- Confiança -->
+          <div class="conf-row" style="margin-top:12px">
+            <div class="conf-label">Confiança IA</div>
+            <div class="conf-track"><div class="conf-fill" id="confFill" style="width:0%"></div></div>
+            <div class="conf-pct" id="confPct">—</div>
+          </div>
+
+          <!-- Alerta resistência -->
+          <div id="alertaRes" class="alert-res" style="display:none">
+            <span style="font-size:16px">⚠️</span><span id="alertaTxt"></span>
+          </div>
+
+          <!-- Não encontrado -->
+          <div id="naoEncontrado" style="display:none" class="nao-encontrado">
+            <div class="nao-encontrado-icon">🔍</div>
+            <div class="nao-encontrado-title" id="naoEnconTitle">Espécie não encontrada no banco</div>
+            <div class="nao-encontrado-desc" id="naoEnconDesc"></div>
+            <div class="sugestoes" id="sugestoesBtns"></div>
+          </div>
+
+          <!-- Card Lorenzi -->
+          <div id="lorenziCard" class="lorenzi" style="display:none">
+            <div class="lor-head">
+              <div class="lor-nome" id="lorNome">—</div>
+              <div class="lor-cod" id="lorCod">—</div>
+            </div>
+            <div class="lor-pop" id="lorPop">—</div>
+            <div class="lor-body">
+              <div class="lor-sec">
+                <div class="lor-sec-t">Resposta da IA:</div>
+                <div class="ia-raw">
+                  <div class="ia-raw-title">🌍 Resultado PlantNet</div>
+                  <div id="iaRawText">—</div>
+                </div>
+              </div>
+              <div class="lor-sec">
+                <div class="lor-sec-t">Características gerais (Lorenzi 7ª Ed.):</div>
+                <div class="lor-carac" id="lorCarac">—</div>
+              </div>
+              <div class="lor-sec">
+                <div class="lor-sec-t">Controle químico — Suscetibilidade (Lorenzi 7ª Ed.):</div>
+                <div class="susc-wrap">
+                  <table class="susc">
+                    <thead><tr><th>Herbicida</th><th>PRE/PPI</th><th>POS inicial</th><th>POS tardio</th><th>Pl. adulta</th></tr></thead>
+                    <tbody id="suscTbody"></tbody>
+                  </table>
+                </div>
+                <div class="susc-leg">
+                  <span><span class="sA">A</span> >95%</span>
+                  <span><span class="sS">S</span> 85–95%</span>
+                  <span><span class="sM">M</span> 50–85%</span>
+                  <span><span class="sP">P</span> <50%</span>
+                  <span><span class="sT">T</span> tolerante</span>
+                  <span><span class="sDot">•</span> não recomendável</span>
+                  <span><span class="sDash">—</span> sem info</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Info resumo -->
+          <div id="infoGrid" class="info-grid" style="display:none">
+            <div class="info-box in">
+              <div class="info-lbl">Cultura</div>
+              <div class="info-val" id="infoCult">—</div>
+              <div class="info-sub" id="infoArea">—</div>
+            </div>
+            <div class="info-box pe">
+              <div class="info-lbl">Infestação / Perda estimada</div>
+              <div class="info-val" id="infoDens">—</div>
+              <div class="info-sub" id="infoPerda">—</div>
+            </div>
+          </div>
+
+          <!-- Ações -->
+          <div class="acoes" id="acoesDiv" style="display:none">
+            <button class="acao" onclick="novaAnalise()"><span class="acao-i">🔄</span>Nova</button>
+            <button class="acao" onclick="exportarLaudo()"><span class="acao-i">📄</span>Exportar</button>
+            <button class="acao" onclick="salvarHistorico()"><span class="acao-i">💾</span>Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIREITA: VARIÁVEIS -->
+    <div class="card">
+      <div class="ch"><div class="ci t">⚙️</div><div><div class="ct">Variáveis da Análise</div></div></div>
+      <div class="cb">
+        <div class="fr"><label class="fl">Cultura agrícola</label><div class="sw"><select class="fs" id="cultura">
+          <option value="">Selecione...</option>
+          <option value="milho">🌽 Milho</option>
+          <option value="soja">🫘 Soja</option>
+          <option value="ambos">🌽🫘 Rotação milho/soja</option>
+        </select></div></div>
+        <div class="fr"><label class="fl">Estágio da cultura</label><div class="sw"><select class="fs" id="estcult">
+          <option>Emergência / Germinação</option><option>Vegetativo (V1–V6)</option>
+          <option>Pré-florescimento</option><option>Florescimento</option>
+          <option>Enchimento de grãos</option><option>Maturação</option>
+        </select></div></div>
+        <div class="fr"><label class="fl">Área total (ha)</label>
+          <input type="text" class="fi" id="area" placeholder="Ex: 50 ha"></div>
+        <div class="fr">
+          <label class="fl">Densidade de infestação estimada</label>
+          <div class="slw"><input type="range" class="sr" id="dSlider" min="0" max="100" value="40" oninput="updSlider(this)"><span class="rv2" id="dVal">40%</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:2px">
+            <span style="font-size:9px;color:var(--cc)">Baixa</span>
+            <span style="font-size:9px;color:var(--cc)">Moderada</span>
+            <span style="font-size:9px;color:var(--cc)">Alta</span>
+          </div>
+        </div>
+        <div class="fr"><label class="fl">Sistema de plantio</label><div class="sw"><select class="fs" id="sistema">
+          <option>Plantio direto</option><option>Plantio convencional</option><option>Cultivo mínimo</option>
+        </select></div></div>
+        <div class="fr"><label class="fl">Histórico de herbicidas</label><div class="sw"><select class="fs" id="herbhist">
+          <option>Sem aplicação recente</option><option>Glifosato</option><option>Atrazina</option>
+          <option>Inibidores de ALS</option><option>Múltiplos herbicidas</option><option>Suspeita de resistência</option>
+        </select></div></div>
+        <div class="fr"><label class="fl">Tipo de solo</label><div class="sw"><select class="fs" id="solo">
+          <option>Argiloso</option><option>Arenoso</option><option>Textura média</option>
+        </select></div></div>
+      </div>
+    </div>
+
+    <!-- MAPA -->
+    <div class="card gfull" id="cardMapa" style="display:none">
+      <div class="ch"><div class="ci a">🗺️</div><div><div class="ct">Mapa de Infestação Simulado</div></div></div>
+      <div class="cb">
+        <div class="mapa-grid" id="mapaGrid"></div>
+        <div class="mapa-leg">
+          <div class="mapa-li"><div class="mapa-lc" style="background:#1E4D18"></div>Cultura saudável</div>
+          <div class="mapa-li"><div class="mapa-lc" style="background:#D4AC0D"></div>Infestação leve</div>
+          <div class="mapa-li"><div class="mapa-lc" style="background:#E67E22"></div>Moderada</div>
+          <div class="mapa-li"><div class="mapa-lc" style="background:#C0392B"></div>Severa</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABA ENCICLOPÉDIA -->
+<div id="enc" class="tc">
+  <h1 class="pt">Enciclopédia — Lorenzi 7ª Ed.</h1>
+  <p class="ps">20 espécies de milho e soja com fichas completas extraídas do Manual de Identificação e Controle de Plantas Daninhas — Harri Lorenzi.</p>
+  <div class="stats-row" id="encStats"></div>
+  <div class="enc-grid" id="encGrid"></div>
+</div>
+
+<!-- ABA HISTÓRICO -->
+<div id="hist" class="tc">
+  <h1 class="pt">Histórico de Análises</h1>
+  <div class="card"><div class="cb"><div id="histLista"><div class="hist-vazio">📂 Nenhuma análise salva ainda.</div></div></div></div>
+</div>
+
+<!-- ABA DASHBOARD -->
+<div id="dash" class="tc">
+  <h1 class="pt">Dashboard</h1>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-val" id="dTot">0</div><div class="stat-lbl">Análises realizadas</div></div>
+    <div class="stat-card"><div class="stat-val" id="dEsp">0</div><div class="stat-lbl">Espécies únicas</div></div>
+    <div class="stat-card"><div class="stat-val" id="dConf">—</div><div class="stat-lbl">Confiança média IA</div></div>
+    <div class="stat-card"><div class="stat-val" id="dRes">0</div><div class="stat-lbl">Alertas resistência</div></div>
+  </div>
+  <div class="card"><div class="ch"><div class="ci r">📈</div><div><div class="ct">Espécies detectadas</div></div></div>
+    <div class="cb" id="dashChart"><div class="hist-vazio">📊 Realize análises para ver estatísticas.</div></div>
+  </div>
+</div>
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="fecharModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-tit" id="modalTit">—</div><div class="modal-sub" id="modalSub"></div></div>
+      <button class="modal-close" onclick="fecharModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════ BANCO DE DADOS LORENZI ══════════════
+const DB = [
+  {id:'amaranthus-hybridus',nome:"Amaranthus hybridus",cod:"AMAHY; Família: Amaranthaceae",pop:"caruru-de-mancha, caruru-roxo, bredo",
+   carac:"Planta anual, herbácea, ereta, muito ramificada, de 50-150 cm de altura. Folhas membranáceas, alternas, de 3-8 cm de comprimento, com uma mancha esbranquiçada no centro. Inflorescência em panículas terminais rígidas. Reprodução por sementes.",
+   cult:["milho","soja"],res:true,resInfo:"Resistência ao glifosato confirmada no Brasil (Centro-Oeste). Biótipos resistentes a ALS relatados no PR e SP (HRAC-BR).",pb:40,pd:"Até 40% de redução em alta densidade.",
+   herb:[{n:"atrazine",pre:"A",posi:"M",post:"M",adu:"•"},{n:"bentazon",pre:"—",posi:"S",post:"M",adu:"•"},{n:"chlorimuron-ethyl",pre:"•",posi:"S",post:"M",adu:"•"},{n:"clomazone",pre:"S",posi:"—",post:"—",adu:"—"},{n:"diuron",pre:"A",posi:"S",post:"M",adu:"•"},{n:"fomesafen",pre:"—",posi:"S",post:"•",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"A"},{n:"lactofen",pre:"—",posi:"A",post:"S",adu:"•"},{n:"mesotrione",pre:"—",posi:"S",post:"S",adu:"•"},{n:"saflufenacil",pre:"A",posi:"S",post:"•",adu:"•"},{n:"2,4-D amine",pre:"P",posi:"A",post:"A",adu:"S"}]},
+
+  {id:'amaranthus-spinosus',nome:"Amaranthus spinosus",cod:"AMASP; Família: Amaranthaceae",pop:"caruru-de-espinho, caruru-de-porco, bredo-branco",
+   carac:"Planta anual, herbácea, glabra, espinhenta, muito ramificada, de 50-100 cm de altura. Folhas membranáceas com manchas arroxeadas, de 3-8 cm. Dois espinhos na base de cada pecíolo. Reprodução por sementes.",
+   cult:["milho","soja"],res:false,pb:35,pd:"30-40% de redução em alta densidade.",
+   herb:[{n:"atrazine",pre:"A",posi:"M",post:"M",adu:"•"},{n:"bentazon",pre:"—",posi:"S",post:"M",adu:"•"},{n:"chlorimuron-ethyl",pre:"•",posi:"S",post:"M",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"A"},{n:"lactofen",pre:"—",posi:"A",post:"S",adu:"•"},{n:"mesotrione",pre:"—",posi:"S",post:"S",adu:"•"},{n:"saflufenacil",pre:"A",posi:"S",post:"•",adu:"•"},{n:"tembotrione",pre:"—",posi:"M",post:"P",adu:"P"},{n:"2,4-D amine",pre:"P",posi:"A",post:"A",adu:"S"}]},
+
+  {id:'bidens-pilosa',nome:"Bidens pilosa",cod:"BIDPI; Família: Asteraceae",pop:"picão-preto, pico, carrapicho-de-duas-pontas",
+   carac:"Planta anual, ereta, muito ramificada, de 30-120 cm de altura. Folhas opostas com 3-5 folíolos. Capítulos florais com flores amarelas. Aquênios com 2-4 aristas retrorsas. Reprodução por sementes.",
+   cult:["milho","soja"],res:true,resInfo:"Resistência ao glifosato confirmada em B. subalternans no Brasil (HRAC-BR). Verificar a espécie na área.",pb:20,pd:"15-25% de redução em densidades médias.",
+   herb:[{n:"bentazon",pre:"—",posi:"A",post:"S",adu:"•"},{n:"chlorimuron-ethyl",pre:"•",posi:"A",post:"S",adu:"•"},{n:"fomesafen",pre:"—",posi:"S",post:"•",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"A"},{n:"lactofen",pre:"—",posi:"A",post:"S",adu:"•"},{n:"saflufenacil",pre:"A",posi:"S",post:"P",adu:"•"},{n:"2,4-D amine",pre:"S",posi:"A",post:"A",adu:"A"}]},
+
+  {id:'commelina-benghalensis',nome:"Commelina benghalensis",cod:"COMBE; Família: Commelinaceae",pop:"trapoeraba, trapoeraba-roxa, marianinha",
+   carac:"Planta anual ou perene, herbácea, muito ramificada, de 20-50 cm, com raízes nos nós. Folhas alternas, sésseis, de 3-8 cm. Flores azuis. Reproduz-se por sementes e vegetativamente pelos ramos.",
+   cult:["milho","soja"],res:false,pb:25,pd:"20-30% de redução em infestações severas.",
+   herb:[{n:"atrazine",pre:"—",posi:"M",post:"P",adu:"•"},{n:"bentazon",pre:"—",posi:"S",post:"M",adu:"•"},{n:"carfentrazone-ethyl",pre:"—",posi:"S",post:"M",adu:"P"},{n:"glyphosate",pre:"—",posi:"M",post:"P",adu:"P"},{n:"lactofen",pre:"—",posi:"S",post:"M",adu:"•"},{n:"mesotrione",pre:"—",posi:"S",post:"M",adu:"•"},{n:"saflufenacil",pre:"A",posi:"S",post:"M",adu:"•"},{n:"2,4-D amine",pre:"M",posi:"A",post:"S",adu:"M"}]},
+
+  {id:'conyza-bonariensis',nome:"Conyza bonariensis",cod:"ERIBO; Família: Asteraceae",pop:"buva, buva-da-argentina, voadeira",
+   carac:"Planta anual ou bianual, ereta, muito ramificada no ápice, de 30-80 cm. Folhas alternas, lanceoladas, pilosas, de 3-10 cm. Capítulos esbranquiçados muito numerosos. Reprodução por sementes anemocóricas.",
+   cult:["milho","soja"],res:true,resInfo:"RESISTÊNCIA MÚLTIPLA: glifosato, ALS, Fotossistema I e PROTOX. PR, SP, RS, SC, MS, GO, MT (HRAC-BR 2023). 1 planta/m² = 14% de perda na soja.",pb:65,pd:"Até 65% de perda. 1 planta/m² = 14% de perda na soja (Embrapa).",
+   herb:[{n:"2,4-D amine",pre:"P",posi:"A",post:"A",adu:"S"},{n:"chlorimuron-ethyl",pre:"•",posi:"S",post:"M",adu:"P"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"S"},{n:"paraquat",pre:"—",posi:"A",post:"M",adu:"P"},{n:"saflufenacil",pre:"P",posi:"T",post:"•",adu:"•"}]},
+
+  {id:'digitaria-horizontalis',nome:"Digitaria horizontalis",cod:"DIGHO; Família: Poaceae",pop:"capim-colchão, mão-de-sapo, capim-manjericão",
+   carac:"Planta anual, herbácea, decumbente ou ascendente, de 30-90 cm. Colmos cilíndricos, glabros. Folhas planas, de 5-15 cm. Lígula membranosa. Reprodução exclusivamente por sementes.",
+   cult:["milho","soja"],res:false,pb:30,pd:"25-40% de redução em infestações altas.",
+   herb:[{n:"atrazine",pre:"A",posi:"M",post:"•",adu:"•"},{n:"clethodim",pre:"—",posi:"A",post:"S",adu:"M"},{n:"fluazifop-p-butyl",pre:"—",posi:"A",post:"M",adu:"T"},{n:"glyphosate",pre:"—",posi:"A",post:"S",adu:"M"},{n:"haloxyfop-methyl",pre:"—",posi:"A",post:"S",adu:"M"},{n:"nicosulfuron",pre:"—",posi:"A",post:"S",adu:"M"},{n:"pendimethalin",pre:"A",posi:"—",post:"—",adu:"—"},{n:"quizalofop-p-ethyl",pre:"—",posi:"A",post:"S",adu:"M"},{n:"tembotrione",pre:"—",posi:"A",post:"S",adu:"M"}]},
+
+  {id:'digitaria-insularis',nome:"Digitaria insularis",cod:"DIGIN; Família: Poaceae",pop:"capim-amargoso, capim-açu, capim-pororó",
+   carac:"Planta perene, herbácea, cespitosa, ereta, de 50-100 cm, formando touceiras. Folhas ligeiramente ásperas, de 15-25 cm. Reprodução por sementes e rizomas.",
+   cult:["milho","soja"],res:true,resInfo:"RESISTÊNCIA AO GLIFOSATO em >15 estados brasileiros. Primeiro biótipo resistente em 2009 (HRAC-BR).",pb:50,pd:"1 planta/m² = 21% de perda na soja (Embrapa). Até 50% em infestações altas.",
+   herb:[{n:"atrazine",pre:"P",posi:"M",post:"P",adu:"—"},{n:"clethodim",pre:"—",posi:"A",post:"S",adu:"M"},{n:"fluazifop-p-butyl",pre:"—",posi:"A",post:"M",adu:"T"},{n:"glyphosate",pre:"—",posi:"A",post:"S",adu:"P"},{n:"haloxyfop-methyl",pre:"—",posi:"A",post:"S",adu:"M"},{n:"mesotrione",pre:"—",posi:"S",post:"—",adu:"M"},{n:"quizalofop-p-ethyl",pre:"—",posi:"A",post:"S",adu:"M"},{n:"tembotrione",pre:"—",posi:"A",post:"M",adu:"T"}]},
+
+  {id:'echinochloa-crus-galli',nome:"Echinochloa crus-galli",cod:"ECHCG; Família: Poaceae",pop:"capim-arroz, capim-de-colônia, capim-liso",
+   carac:"Planta anual, herbácea, ereta ou decumbente, de 50-100 cm. Colmos cilíndricos, glabros. Folhas planas, de 15-40 cm, sem lígula. Reprodução por sementes.",
+   cult:["milho","soja"],res:false,pb:35,pd:"30-40% de redução em milho e soja.",
+   herb:[{n:"atrazine",pre:"A",posi:"M",post:"•",adu:"•"},{n:"clethodim",pre:"—",posi:"A",post:"S",adu:"M"},{n:"fluazifop-p-butyl",pre:"—",posi:"A",post:"M",adu:"T"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"S"},{n:"haloxyfop-methyl",pre:"—",posi:"A",post:"S",adu:"M"},{n:"nicosulfuron",pre:"—",posi:"A",post:"S",adu:"M"},{n:"pendimethalin",pre:"A",posi:"—",post:"—",adu:"—"},{n:"tembotrione",pre:"—",posi:"A",post:"S",adu:"M"}]},
+
+  {id:'eleusine-indica',nome:"Eleusine indica",cod:"ELEIN; Família: Poaceae",pop:"capim-pé-de-galinha, capim-goiaba, pé-de-galinha",
+   carac:"Planta anual, herbácea, cespitosa, de 20-70 cm. Colmos comprimidos, glabros. Folhas planas, cartáceas, de 10-30 cm. Lígula membranosa lacerada. Reprodução exclusivamente por sementes.",
+   cult:["milho","soja"],res:true,resInfo:"RESISTÊNCIA MÚLTIPLA confirmada: glifosato + cletodim + haloxifope. Embrapa Cerrado, 2023.",pb:50,pd:"Perdas >50% em alta densidade.",
+   herb:[{n:"clethodim",pre:"—",posi:"A",post:"S",adu:"M"},{n:"fluazifop-p-butyl",pre:"—",posi:"A",post:"M",adu:"T"},{n:"glyphosate",pre:"—",posi:"A",post:"S",adu:"M"},{n:"haloxyfop-methyl",pre:"—",posi:"A",post:"S",adu:"M"},{n:"nicosulfuron",pre:"—",posi:"A",post:"S",adu:"M"},{n:"quizalofop-p-ethyl",pre:"—",posi:"A",post:"S",adu:"M"},{n:"sethoxydim",pre:"—",posi:"A",post:"M",adu:"T"},{n:"tembotrione",pre:"—",posi:"A",post:"S",adu:"M"}]},
+
+  {id:'euphorbia-heterophylla',nome:"Euphorbia heterophylla",cod:"EPHHL; Família: Euphorbiaceae",pop:"leiteiro, amendoim-bravo, café-do-diabo",
+   carac:"Planta anual, herbácea, ereta, muito ramificada, de 30-120 cm. Folhas alternas com formas variáveis, exudando látex branco. Frutos em cápsulas com 3 sementes. Reprodução por sementes.",
+   cult:["soja"],res:true,resInfo:"Resistência a inibidores de ALS confirmada no Brasil (RS, SC, PR, SP, GO) — HRAC-BR.",pb:50,pd:"30-50% de redução em 4 plantas/m².",
+   herb:[{n:"bentazon",pre:"—",posi:"S",post:"M",adu:"P"},{n:"chlorimuron-ethyl",pre:"•",posi:"S",post:"M",adu:"P"},{n:"fomesafen",pre:"—",posi:"A",post:"S",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"A"},{n:"lactofen",pre:"—",posi:"A",post:"S",adu:"•"},{n:"saflufenacil",pre:"S",posi:"A",post:"M",adu:"•"}]},
+
+  {id:'ipomoea-grandifolia',nome:"Ipomoea grandifolia",cod:"IPOGU; Família: Convolvulaceae",pop:"corda-de-viola, campainha, corriola",
+   carac:"Planta anual, herbácea, volúvel e trepadora, de 1-3 m. Folhas alternas, cordadas, de 5-15 cm. Flores roxas a lilás, campanuladas, de 3-6 cm. Reprodução por sementes.",
+   cult:["milho","soja"],res:false,pb:35,pd:"25-40% de redução. Dificulta colheita mecânica ao enredar equipamentos.",
+   herb:[{n:"atrazine",pre:"M",posi:"M",post:"P",adu:"—"},{n:"bentazon",pre:"—",posi:"S",post:"M",adu:"•"},{n:"chlorimuron-ethyl",pre:"•",posi:"A",post:"S",adu:"M"},{n:"clomazone",pre:"A",posi:"—",post:"—",adu:"—"},{n:"fomesafen",pre:"—",posi:"S",post:"M",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"A"},{n:"lactofen",pre:"—",posi:"S",post:"M",adu:"•"},{n:"saflufenacil",pre:"A",posi:"S",post:"M",adu:"•"},{n:"2,4-D amine",pre:"S",posi:"A",post:"A",adu:"A"}]},
+
+  {id:'ipomoea-nil',nome:"Ipomoea nil",cod:"IPONI; Família: Convolvulaceae",pop:"corda-de-viola-roxa, campainha-roxa, jetirana",
+   carac:"Planta anual, volúvel, herbácea, de 1-3 m. Folhas trilobadas ou inteiras, cordiformes, pubescentes. Flores azuis a roxas, campanuladas. Reprodução por sementes.",
+   cult:["milho","soja"],res:false,pb:30,pd:"20-35% de redução em lavouras de soja.",
+   herb:[{n:"atrazine",pre:"M",posi:"M",post:"P",adu:"—"},{n:"chlorimuron-ethyl",pre:"•",posi:"A",post:"S",adu:"M"},{n:"clomazone",pre:"A",posi:"—",post:"—",adu:"—"},{n:"fomesafen",pre:"—",posi:"S",post:"M",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"A"},{n:"lactofen",pre:"—",posi:"S",post:"M",adu:"•"},{n:"saflufenacil",pre:"A",posi:"S",post:"M",adu:"•"},{n:"2,4-D amine",pre:"S",posi:"A",post:"A",adu:"A"}]},
+
+  {id:'richardia-brasiliensis',nome:"Richardia brasiliensis",cod:"RCHBR; Família: Rubiaceae",pop:"poaia-branca, erva-toste, ipeca-do-campo",
+   carac:"Planta anual, herbácea, muito ramificada e prostrada, de 20-60 cm. Folhas opostas, oval-elípticas, de 2-5 cm, ásperas. Flores brancas em glomérulos terminais. Reprodução por sementes.",
+   cult:["milho","soja"],res:false,pb:15,pd:"10-20% de redução em densidades médias.",
+   herb:[{n:"bentazon",pre:"—",posi:"A",post:"S",adu:"•"},{n:"chlorimuron-ethyl",pre:"•",posi:"A",post:"S",adu:"M"},{n:"fomesafen",pre:"—",posi:"S",post:"M",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"A"},{n:"lactofen",pre:"—",posi:"S",post:"M",adu:"•"},{n:"2,4-D amine",pre:"S",posi:"A",post:"A",adu:"S"}]},
+
+  {id:'senna-obtusifolia',nome:"Senna obtusifolia",cod:"CASOB; Família: Fabaceae",pop:"fedegoso, mata-pasto, fedegoso-verdadeiro",
+   carac:"Planta anual, herbácea, semi-ereta, ramificada, de 30-90 cm. Folhas biparipinadas com 2-4 pares de folíolos obovados. Flores amarelas. Vagens longas e estreitas. Reprodução por sementes de longa dormência.",
+   cult:["milho","soja"],res:false,pb:30,pd:"25-40% de redução. Vagens contaminam lotes de soja na colheita.",
+   herb:[{n:"bentazon",pre:"—",posi:"S",post:"M",adu:"•"},{n:"chlorimuron-ethyl",pre:"•",posi:"S",post:"M",adu:"P"},{n:"fomesafen",pre:"—",posi:"A",post:"S",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"A"},{n:"lactofen",pre:"—",posi:"A",post:"S",adu:"•"},{n:"saflufenacil",pre:"S",posi:"S",post:"M",adu:"•"},{n:"2,4-D amine",pre:"A",posi:"A",post:"A",adu:"S"}]},
+
+  {id:'sida-rhombifolia',nome:"Sida rhombifolia",cod:"SIDRH; Família: Malvaceae",pop:"guanxuma, vassourinha, vassoura-de-botão",
+   carac:"Planta anual ou perene, sub-arbustiva, ereta, muito ramificada, de 50-120 cm. Folhas alternas, rombóides a oval-lanceoladas, de 3-7 cm. Flores amarelas solitárias. Reprodução por sementes.",
+   cult:["milho","soja"],res:false,pb:25,pd:"25-35% de redução em infestações severas.",
+   herb:[{n:"atrazine",pre:"S",posi:"M",post:"P",adu:"—"},{n:"chlorimuron-ethyl",pre:"•",posi:"S",post:"M",adu:"P"},{n:"fomesafen",pre:"—",posi:"S",post:"M",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"S",adu:"M"},{n:"lactofen",pre:"—",posi:"S",post:"M",adu:"•"},{n:"mesotrione",pre:"—",posi:"S",post:"M",adu:"•"},{n:"2,4-D amine",pre:"M",posi:"A",post:"S",adu:"M"}]},
+
+  {id:'sorghum-arundinaceum',nome:"Sorghum arundinaceum",cod:"SORAR; Família: Poaceae",pop:"capim-massambará, sorgo-selvagem",
+   carac:"Planta perene, herbácea, cespitosa, ereta, de 1-3 m. Colmos robustos, cilíndricos. Folhas planas, de 30-80 cm. Panícula grande e aberta. Reprodução por sementes e rizomas.",
+   cult:["milho"],res:false,pb:45,pd:"Acima de 50% no milho safrinha em infestações não controladas.",
+   herb:[{n:"atrazine",pre:"S",posi:"M",post:"P",adu:"—"},{n:"clethodim",pre:"—",posi:"A",post:"S",adu:"M"},{n:"fluazifop-p-butyl",pre:"—",posi:"A",post:"M",adu:"T"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"S"},{n:"nicosulfuron",pre:"—",posi:"A",post:"S",adu:"M"},{n:"tembotrione",pre:"—",posi:"A",post:"S",adu:"M"}]},
+
+  {id:'urochloa-plantaginea',nome:"Urochloa plantaginea",cod:"BRAPL; Família: Poaceae",pop:"papuã, capim-marmelada, braquiária-anual",
+   carac:"Planta anual, herbácea, ereta ou decumbente, de 30-120 cm. Folhas planas, de 10-20 cm, glabras ou levemente pilosas. Lígula ciliada. Reprodução exclusivamente por sementes.",
+   cult:["milho","soja"],res:false,pb:25,pd:"20-30% de redução em milho e soja.",
+   herb:[{n:"atrazine",pre:"S",posi:"M",post:"P",adu:"—"},{n:"clethodim",pre:"—",posi:"A",post:"S",adu:"M"},{n:"fluazifop-p-butyl",pre:"—",posi:"A",post:"M",adu:"T"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"S"},{n:"haloxyfop-methyl",pre:"—",posi:"A",post:"S",adu:"M"},{n:"nicosulfuron",pre:"—",posi:"A",post:"S",adu:"M"},{n:"tembotrione",pre:"—",posi:"A",post:"S",adu:"M"}]},
+
+  {id:'desmodium-tortuosum',nome:"Desmodium tortuosum",cod:"DEDTO; Família: Fabaceae",pop:"carrapicho-beiço-de-boi, pega-pega, amor-do-campo",
+   carac:"Planta anual, herbácea, semi-ereta, muito ramificada, de 40-150 cm. Folhas trifolioladas, pubescentes. Frutos em artículos com ganchos. Reprodução por sementes.",
+   cult:["soja"],res:false,pb:22,pd:"18-25% de redução na soja.",
+   herb:[{n:"chlorimuron-ethyl",pre:"•",posi:"A",post:"S",adu:"M"},{n:"fomesafen",pre:"—",posi:"S",post:"M",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"A"},{n:"lactofen",pre:"—",posi:"A",post:"S",adu:"•"},{n:"2,4-D amine",pre:"S",posi:"A",post:"S",adu:"M"}]},
+
+  {id:'portulaca-oleracea',nome:"Portulaca oleracea",cod:"POROL; Família: Portulacaceae",pop:"beldroega, bredo-de-porco, baldroega",
+   carac:"Planta anual, herbácea, prostrada, muito suculenta, de 10-40 cm. Folhas obovadas, de 1-3 cm. Flores amarelas solitárias. Reprodução por sementes e fragmentos de caule.",
+   cult:["milho","soja"],res:false,pb:18,pd:"15-25% de redução em densidades médias.",
+   herb:[{n:"atrazine",pre:"A",posi:"S",post:"M",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"A"},{n:"mesotrione",pre:"—",posi:"S",post:"M",adu:"•"},{n:"saflufenacil",pre:"A",posi:"S",post:"M",adu:"•"},{n:"2,4-D amine",pre:"M",posi:"A",post:"S",adu:"M"}]},
+
+  {id:'alternanthera-tenella',nome:"Alternanthera tenella",cod:"ALNTE; Família: Amaranthaceae",pop:"apaga-fogo, alecrim-do-campo, ervanço",
+   carac:"Planta anual ou perene, herbácea, muito ramificada, prostrada a semi-ereta, de 20-60 cm. Folhas opostas, elípticas, de 1-4 cm. Glomérulos de flores esbranquiçadas. Reprodução por sementes.",
+   cult:["milho","soja"],res:false,pb:20,pd:"15-25% de redução em densidades médias.",
+   herb:[{n:"atrazine",pre:"A",posi:"S",post:"M",adu:"•"},{n:"carfentrazone-ethyl",pre:"—",posi:"S",post:"M",adu:"P"},{n:"fomesafen",pre:"—",posi:"S",post:"M",adu:"•"},{n:"glyphosate",pre:"—",posi:"A",post:"A",adu:"A"},{n:"mesotrione",pre:"—",posi:"S",post:"M",adu:"•"},{n:"2,4-D amine",pre:"M",posi:"A",post:"S",adu:"M"}]}
+];
+
+// Aliases para busca por nome popular
+const ALIASES = {
+  'caruru': ['amaranthus-hybridus','amaranthus-spinosus'],
+  'caruru de mancha': 'amaranthus-hybridus',
+  'caruru roxo': 'amaranthus-hybridus',
+  'caruru de espinho': 'amaranthus-spinosus',
+  'caruru de porco': 'amaranthus-spinosus',
+  'picão preto': 'bidens-pilosa',
+  'picao preto': 'bidens-pilosa',
+  'picão': 'bidens-pilosa',
+  'trapoeraba': 'commelina-benghalensis',
+  'buva': 'conyza-bonariensis',
+  'voadeira': 'conyza-bonariensis',
+  'capim colchão': 'digitaria-horizontalis',
+  'capim colchao': 'digitaria-horizontalis',
+  'mão de sapo': 'digitaria-horizontalis',
+  'capim amargoso': 'digitaria-insularis',
+  'capim açu': 'digitaria-insularis',
+  'capim arroz': 'echinochloa-crus-galli',
+  'pé de galinha': 'eleusine-indica',
+  'capim pé de galinha': 'eleusine-indica',
+  'capim pe de galinha': 'eleusine-indica',
+  'leiteiro': 'euphorbia-heterophylla',
+  'amendoim bravo': 'euphorbia-heterophylla',
+  'corda de viola': 'ipomoea-grandifolia',
+  'corda-de-viola': 'ipomoea-grandifolia',
+  'campainha': 'ipomoea-grandifolia',
+  'corda de viola roxa': 'ipomoea-nil',
+  'poaia branca': 'richardia-brasiliensis',
+  'fedegoso': 'senna-obtusifolia',
+  'guanxuma': 'sida-rhombifolia',
+  'vassourinha': 'sida-rhombifolia',
+  'capim massambara': 'sorghum-arundinaceum',
+  'sorgo selvagem': 'sorghum-arundinaceum',
+  'papua': 'urochloa-plantaginea',
+  'papuã': 'urochloa-plantaginea',
+  'capim marmelada': 'urochloa-plantaginea',
+  'carrapicho beiço de boi': 'desmodium-tortuosum',
+  'beldroega': 'portulaca-oleracea',
+  'apaga fogo': 'alternanthera-tenella',
+  'apaga-fogo': 'alternanthera-tenella',
+};
+
+// ══════════════ SVGs ══════════════
+const SVGS = {
+'amaranthus-hybridus':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#DCEDC8"/><line x1="40" y1="70" x2="40" y2="18" stroke="#558B2F" stroke-width="3"/><ellipse cx="40" cy="33" rx="15" ry="9" fill="#7CB342" transform="rotate(-15 40 33)"/><ellipse cx="40" cy="45" rx="17" ry="10" fill="#8BC34A" transform="rotate(10 40 45)"/><circle cx="40" cy="18" r="5" fill="#F9A825"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#1B5E20" font-family="sans-serif">Milho/Soja</text></svg>',
+'amaranthus-spinosus':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#FFEBEE"/><line x1="40" y1="70" x2="40" y2="18" stroke="#B71C1C" stroke-width="2.5"/><ellipse cx="40" cy="35" rx="14" ry="8" fill="#EF9A9A" transform="rotate(-10 40 35)"/><ellipse cx="40" cy="48" rx="16" ry="9" fill="#E57373" transform="rotate(8 40 48)"/><circle cx="40" cy="18" r="5" fill="#C62828"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#7F0000" font-family="sans-serif">Milho/Soja</text></svg>',
+'bidens-pilosa':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#FFF9C4"/><line x1="40" y1="70" x2="40" y2="20" stroke="#F9A825" stroke-width="2.5"/><path d="M40 50 Q28 45 22 35" stroke="#FBC02D" stroke-width="2" fill="none"/><path d="M40 42 Q54 37 58 27" stroke="#FBC02D" stroke-width="2" fill="none"/><circle cx="40" cy="20" r="7" fill="#FFEE58"/><circle cx="40" cy="20" r="3" fill="#FFA000"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#F57F17" font-family="sans-serif">Milho/Soja</text></svg>',
+'commelina-benghalensis':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#E8F5E9"/><path d="M25 68 Q30 52 40 45 Q50 38 55 24" stroke="#388E3C" stroke-width="2.5" fill="none"/><ellipse cx="42" cy="44" rx="11" ry="6" fill="#66BB6A" transform="rotate(20 42 44)"/><circle cx="54" cy="25" r="6" fill="#4FC3F7"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#1B5E20" font-family="sans-serif">Milho/Soja</text></svg>',
+'conyza-bonariensis':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#F1F8E9"/><line x1="40" y1="70" x2="40" y2="14" stroke="#689F38" stroke-width="2"/><ellipse cx="40" cy="40" rx="19" ry="5" fill="#AED581" transform="rotate(-20 40 40)"/><ellipse cx="40" cy="49" rx="21" ry="5" fill="#C5E1A5" transform="rotate(15 40 49)"/><circle cx="40" cy="14" r="5" fill="#FFFDE7"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#1B5E20" font-family="sans-serif">Soja</text></svg>',
+'digitaria-horizontalis':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#C8E6C0"/><line x1="40" y1="65" x2="40" y2="28" stroke="#2E7D32" stroke-width="2.5"/><path d="M40 45 Q56 36 62 24" stroke="#388E3C" stroke-width="2" fill="none"/><path d="M40 50 Q24 41 18 29" stroke="#388E3C" stroke-width="2" fill="none"/><ellipse cx="62" cy="24" rx="7" ry="3.5" fill="#8BC34A" transform="rotate(-30 62 24)"/><ellipse cx="18" cy="29" rx="7" ry="3.5" fill="#8BC34A" transform="rotate(30 18 29)"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#1B5E20" font-family="sans-serif">Milho/Soja</text></svg>',
+'digitaria-insularis':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#E0F2F1"/><path d="M35 70 Q36 54 40 40 Q44 26 48 14" stroke="#00796B" stroke-width="2.5" fill="none"/><path d="M30 70 Q32 58 38 48 Q42 38 50 28" stroke="#26A69A" stroke-width="2" fill="none"/><ellipse cx="48" cy="15" rx="5" ry="9" fill="#80CBC4" transform="rotate(10 48 15)"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#004D40" font-family="sans-serif">Milho/Soja</text></svg>',
+'echinochloa-crus-galli':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#E1F8E7"/><line x1="40" y1="68" x2="40" y2="18" stroke="#1B7A3A" stroke-width="2.5"/><path d="M40 55 Q30 48 26 36" stroke="#2E8B4A" stroke-width="2" fill="none"/><path d="M40 47 Q50 40 54 28" stroke="#2E8B4A" stroke-width="2" fill="none"/><ellipse cx="40" cy="18" rx="4" ry="8" fill="#A5D6A7"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#1B5E20" font-family="sans-serif">Milho/Soja</text></svg>',
+'eleusine-indica':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#E8EAF6"/><line x1="40" y1="68" x2="40" y2="20" stroke="#3949AB" stroke-width="2.5"/><path d="M40 55 Q52 47 56 35" stroke="#5C6BC0" stroke-width="2" fill="none"/><path d="M40 55 Q28 47 24 35" stroke="#5C6BC0" stroke-width="2" fill="none"/><ellipse cx="40" cy="20" rx="3" ry="7" fill="#9FA8DA"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#283593" font-family="sans-serif">Milho/Soja</text></svg>',
+'euphorbia-heterophylla':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#FFF8E1"/><line x1="40" y1="70" x2="40" y2="20" stroke="#F57F17" stroke-width="2.5"/><path d="M40 55 Q28 50 22 40" stroke="#F9A825" stroke-width="2" fill="none"/><path d="M40 45 Q54 40 58 30" stroke="#F9A825" stroke-width="2" fill="none"/><ellipse cx="22" cy="39" rx="11" ry="7" fill="#FFD54F" transform="rotate(-10 22 39)"/><circle cx="40" cy="20" r="5" fill="#FF6F00" opacity=".7"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#E65100" font-family="sans-serif">Soja</text></svg>',
+'ipomoea-grandifolia':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#FCE4EC"/><path d="M15 65 Q25 50 35 42 Q50 32 58 18" stroke="#C2185B" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="36" cy="41" rx="12" ry="8" fill="#F06292" transform="rotate(-15 36 41)"/><circle cx="58" cy="18" r="7" fill="#E91E63" opacity=".8"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#880E4F" font-family="sans-serif">Milho/Soja</text></svg>',
+'ipomoea-nil':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#EDE7F6"/><path d="M15 65 Q25 50 35 42 Q50 32 58 18" stroke="#512DA8" stroke-width="2" fill="none"/><ellipse cx="36" cy="41" rx="12" ry="8" fill="#9575CD" transform="rotate(-15 36 41)"/><circle cx="58" cy="18" r="7" fill="#673AB7" opacity=".8"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#4527A0" font-family="sans-serif">Milho/Soja</text></svg>',
+'richardia-brasiliensis':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#F5F5F5"/><path d="M20 65 Q30 52 40 46 Q52 40 62 28" stroke="#757575" stroke-width="2" fill="none"/><ellipse cx="40" cy="46" rx="10" ry="5" fill="#E0E0E0" transform="rotate(10 40 46)"/><circle cx="62" cy="28" r="6" fill="white" stroke="#9E9E9E" stroke-width="1.5"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#424242" font-family="sans-serif">Milho/Soja</text></svg>',
+'senna-obtusifolia':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#FFFDE7"/><line x1="40" y1="68" x2="40" y2="20" stroke="#F57F17" stroke-width="2.5"/><path d="M40 52 Q27 46 22 35" stroke="#F9A825" stroke-width="2" fill="none"/><path d="M40 44 Q54 38 59 27" stroke="#F9A825" stroke-width="2" fill="none"/><ellipse cx="22" cy="34" rx="11" ry="6" fill="#FDD835" transform="rotate(-10 22 34)"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#E65100" font-family="sans-serif">Milho/Soja</text></svg>',
+'sida-rhombifolia':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#E8F5E9"/><line x1="40" y1="70" x2="40" y2="20" stroke="#2E7D32" stroke-width="2.5"/><path d="M40 52 Q27 44 22 32" stroke="#43A047" stroke-width="2" fill="none"/><path d="M40 44 Q55 36 60 24" stroke="#43A047" stroke-width="2" fill="none"/><ellipse cx="22" cy="31" rx="11" ry="7" fill="#A5D6A7" transform="rotate(-15 22 31)"/><circle cx="40" cy="20" r="5" fill="#FFD54F"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#1B5E20" font-family="sans-serif">Milho/Soja</text></svg>',
+'sorghum-arundinaceum':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#F9FBE7"/><line x1="40" y1="68" x2="40" y2="12" stroke="#558B2F" stroke-width="3"/><path d="M40 50 Q26 42 20 28" stroke="#689F38" stroke-width="2" fill="none"/><path d="M40 38 Q55 30 60 16" stroke="#689F38" stroke-width="2" fill="none"/><ellipse cx="40" cy="12" rx="8" ry="12" fill="#C5E1A5"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#33691E" font-family="sans-serif">Milho</text></svg>',
+'urochloa-plantaginea':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#FBE9E7"/><path d="M20 68 Q28 52 36 40 Q44 28 52 14" stroke="#BF360C" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M35 68 Q40 55 44 42 Q48 30 52 18" stroke="#E64A19" stroke-width="2" fill="none"/><ellipse cx="52" cy="14" rx="5" ry="9" fill="#FF8A65" transform="rotate(8 52 14)"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#BF360C" font-family="sans-serif">Milho/Soja</text></svg>',
+'desmodium-tortuosum':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#F9FBE7"/><line x1="40" y1="70" x2="40" y2="18" stroke="#558B2F" stroke-width="2.5"/><path d="M40 52 Q26 44 20 32" stroke="#7CB342" stroke-width="2" fill="none"/><path d="M40 42 Q55 34 60 22" stroke="#7CB342" stroke-width="2" fill="none"/><ellipse cx="20" cy="31" rx="12" ry="6" fill="#DCEDC8"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#33691E" font-family="sans-serif">Soja</text></svg>',
+'portulaca-oleracea':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#E1F5FE"/><path d="M40 70 Q35 55 28 45 Q20 35 18 22" stroke="#0277BD" stroke-width="2" fill="none"/><path d="M40 70 Q45 55 52 45 Q60 35 62 22" stroke="#0288D1" stroke-width="2" fill="none"/><ellipse cx="28" cy="42" rx="9" ry="5" fill="#4FC3F7" transform="rotate(-20 28 42)"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#01579B" font-family="sans-serif">Milho/Soja</text></svg>',
+'alternanthera-tenella':'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#FFF3E0"/><line x1="40" y1="70" x2="40" y2="22" stroke="#E65100" stroke-width="2.5"/><path d="M40 52 Q28 46 22 36" stroke="#F57C00" stroke-width="2" fill="none"/><path d="M40 44 Q54 38 58 28" stroke="#F57C00" stroke-width="2" fill="none"/><ellipse cx="22" cy="35" rx="10" ry="6" fill="#FFCC02" transform="rotate(-10 22 35)"/><text x="40" y="77" text-anchor="middle" font-size="6" fill="#BF360C" font-family="sans-serif">Milho/Soja</text></svg>'
+};
+
+// ══════════════ ESTADO ══════════════
+let imgBase64=null, imgMime=null, resAtual=null, hist=[], filtEncAtual='todos';
+
+// ══════════════ TABS ══════════════
+function switchTab(id,el){
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(id).classList.add('on');el.classList.add('on');
+  if(id==='enc')renderEnc();if(id==='dash')renderDash();
+}
+
+// ══════════════ UPLOAD ══════════════
+const fileInput=document.getElementById('fileInput');
+const uploadArea=document.getElementById('uploadArea');
+
+fileInput.addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  lerImagem(f);
+});
+uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.classList.add('drag');});
+uploadArea.addEventListener('dragleave',()=>uploadArea.classList.remove('drag'));
+uploadArea.addEventListener('drop',e=>{
+  e.preventDefault();uploadArea.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith('image/')){const inp=document.getElementById('fileInput');const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;lerImagem(f);}
+});
+
+function lerImagem(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const dataUrl=e.target.result;
+    imgMime=file.type;
+    imgBase64=dataUrl.split(',')[1];
+    document.getElementById('preview-img').src=dataUrl;
+    document.getElementById('preview-wrap').style.display='block';
+    uploadArea.style.display='none';
+    document.getElementById('resultado').style.display='none';
+    document.getElementById('resultado').classList.remove('on');
+    document.getElementById('cardMapa').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function limparFoto(){
+  imgBase64=null;imgMime=null;
+  document.getElementById('fileInput').value='';
+  document.getElementById('preview-wrap').style.display='none';
+  uploadArea.style.display='block';
+  document.getElementById('resultado').style.display='none';
+  document.getElementById('resultado').classList.remove('on');
+  document.getElementById('cardMapa').style.display='none';
+  document.getElementById('loadingState').classList.remove('on');
+}
+
+function updSlider(inp){document.getElementById('dVal').textContent=inp.value+'%';inp.style.setProperty('--val',inp.value+'%');}
+
+// ══════════════ IDENTIFICAÇÃO VIA FUNÇÃO SERVERLESS (Vercel) ══════════════
+// A foto vai para /api/identificar (função no servidor Vercel), que chama o
+// PlantNet com a chave secreta guardada no servidor. Isso evita o erro de CORS
+// e mantém a chave protegida.
+
+async function analisarComIA(){
+  if(!imgBase64){alert('Envie uma foto da planta primeiro!');return;}
+
+  const btn=document.getElementById('btnAnalisar');
+  btn.disabled=true;btn.innerHTML='⏳ Identificando...';
+  document.getElementById('loadingState').classList.add('on');
+  document.getElementById('resultado').style.display='none';
+  document.getElementById('resultado').classList.remove('on');
+
+  const msgs=['Enviando imagem ao servidor...','Consultando PlantNet...','Analisando características botânicas...','Buscando ficha no banco Lorenzi...'];
+  let mi=0;
+  const mt=setInterval(()=>{document.getElementById('loadingMsg').textContent=msgs[mi%msgs.length];mi++;},1600);
+
+  try {
+    const response = await fetch('/api/identificar', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ image: imgBase64, mime: imgMime })
+    });
+
+    clearInterval(mt);
+
+    if(!response.ok){
+      const errData = await response.json().catch(()=>({}));
+      throw new Error(errData.error || ('Erro '+response.status));
+    }
+
+    const data = await response.json();
+    processarPlantNet(data);
+
+  }catch(err){
+    clearInterval(mt);
+    alert('Erro ao identificar: '+err.message+'\n\nSe você está testando o arquivo localmente (file://), a função /api só funciona quando publicado no Vercel.');
+    document.getElementById('loadingState').classList.remove('on');
+    btn.disabled=false;btn.innerHTML='🌍 Identificar com PlantNet';
+  }
+}
+
+function processarPlantNet(data){
+  document.getElementById('loadingState').classList.remove('on');
+  const btn=document.getElementById('btnAnalisar');
+  btn.disabled=false;btn.innerHTML='🌍 Identificar com PlantNet';
+
+  const results = data.results || [];
+  if(!results.length){
+    mostrarResultado({identificado:false, justificativa:'O PlantNet não retornou resultados. Tente uma foto mais nítida, focando nas folhas ou flores.', confianca:0, sugestoes:[]});
+    return;
+  }
+
+  const top = results[0];
+  const sciName = top.species?.scientificNameWithoutAuthor || top.species?.scientificName || '';
+  const popNames = (top.species?.commonNames||[]).join(', ');
+  const score = Math.round((top.score||0)*100);
+
+  let matched=null;
+  for(const r of results){
+    const sn = r.species?.scientificNameWithoutAuthor || '';
+    const e = buscarEspecie(sn);
+    if(e){ matched=e; break; }
+  }
+
+  const sugestoes = results.slice(0,5).map(r=>{
+    const sn = r.species?.scientificNameWithoutAuthor||'';
+    const cn = (r.species?.commonNames||[])[0]||'';
+    return cn?(cn+' ('+sn+')'):sn;
+  });
+
+  const parsed = {
+    identificado: !!matched,
+    nome_cientifico: matched?matched.nome:sciName,
+    nome_popular: matched?matched.pop.split(',')[0]:popNames,
+    confianca: score,
+    justificativa: 'PlantNet identificou como '+sciName+(popNames?' ('+popNames+')':'')+' com '+score+'% de confiança.'+(matched?' Esta espécie está no banco Lorenzi.':' Esta espécie não está no banco Lorenzi de milho/soja.'),
+    estagio: '',
+    sugestoes: sugestoes,
+    observacoes_campo: 'Top '+results.length+' resultados do PlantNet.',
+    _matchedId: matched?matched.id:null
+  };
+  mostrarResultado(parsed);
+}
+
+function buscarEspecie(nomeIA){
+  if(!nomeIA)return null;
+  const nome=nomeIA.toLowerCase().trim();
+  // busca por nome científico
+  let found=DB.find(e=>e.nome.toLowerCase()===nome||e.nome.toLowerCase().includes(nome)||nome.includes(e.nome.toLowerCase().split(' ')[1]||''));
+  if(found)return found;
+  // busca por aliases (nome popular)
+  for(const [key,val] of Object.entries(ALIASES)){
+    if(nome.includes(key)||key.includes(nome)){
+      const id=Array.isArray(val)?val[0]:val;
+      found=DB.find(e=>e.id===id);
+      if(found)return found;
+    }
+  }
+  return null;
+}
+
+function scCls(v){return{'A':'sA','S':'sS','M':'sM','P':'sP','T':'sT','•':'sDot','—':'sDash'}[v]||'sDash';}
+
+function mostrarResultado(parsed){
+  document.getElementById('loadingState').classList.remove('on');
+  const btn=document.getElementById('btnAnalisar');
+  btn.disabled=false;btn.innerHTML='🌍 Identificar com PlantNet';
+
+  const dens=parseInt(document.getElementById('dSlider').value);
+  const cult=document.getElementById('cultura').value;
+  const area=document.getElementById('area').value||'Não informada';
+
+  // buscar no banco
+  const esp=parsed._matchedId?DB.find(e=>e.id===parsed._matchedId):(parsed.identificado?buscarEspecie(parsed.nome_cientifico||parsed.nome_popular):null);
+
+  const conf=parsed.confianca||0;
+  document.getElementById('confFill').style.width=conf+'%';
+  document.getElementById('confPct').textContent=conf+'%';
+
+  const resEl=document.getElementById('resultado');
+  resEl.style.display='block';
+
+  if(!parsed.identificado||!esp){
+    // não identificado
+    document.getElementById('alertaRes').style.display='none';
+    document.getElementById('lorenziCard').style.display='none';
+    document.getElementById('infoGrid').style.display='none';
+    document.getElementById('acoesDiv').style.display='none';
+    document.getElementById('naoEncontrado').style.display='block';
+    document.getElementById('naoEnconTitle').textContent=parsed.nome_popular||parsed.nome_cientifico?
+      `"${parsed.nome_popular||parsed.nome_cientifico}" — não encontrado no banco Lorenzi`:
+      'Espécie não identificada na foto';
+    document.getElementById('naoEnconDesc').textContent=
+      (parsed.justificativa||'A IA não conseguiu identificar a espécie com segurança.')+
+      (parsed.sugestoes?.length?' Possíveis espécies: '+parsed.sugestoes.join(', ')+'.':"");
+
+    const sugs=document.getElementById('sugestoesBtns');
+    sugs.innerHTML='';
+    const sugestoes=parsed.sugestoes||[];
+    // adicionar botão para cada sugestão encontrada no banco
+    sugestoes.slice(0,4).forEach(s=>{
+      const e2=buscarEspecie(s);
+      if(e2){
+        const b=document.createElement('button');
+        b.className='sugestao-btn';b.textContent=e2.pop.split(',')[0];
+        b.onclick=()=>mostrarEspecieManual(e2,parsed,dens,cult,area);
+        sugs.appendChild(b);
+      }
+    });
+    resAtual={esp:null,parsed,conf,cult,area,dens,img:document.getElementById('preview-img').src};
+  } else {
+    // identificado!
+    document.getElementById('naoEncontrado').style.display='none';
+
+    // alerta resistência
+    if(esp.res){
+      document.getElementById('alertaRes').style.display='flex';
+      document.getElementById('alertaRes').className='alert-res'+(esp.resInfo.includes('MÚLTIPLA')||esp.resInfo.includes('ZERO')?' danger':'');
+      document.getElementById('alertaTxt').textContent=esp.resInfo;
+    }else document.getElementById('alertaRes').style.display='none';
+
+    preencherLorenzi(esp,parsed);
+
+    const pe=Math.min(Math.round(esp.pb*(dens/100)*1.4),95);
+    document.getElementById('infoCult').textContent={milho:'🌽 Milho',soja:'🫘 Soja',ambos:'🌽🫘 Rotação','':"Não informada"}[cult]||cult;
+    document.getElementById('infoArea').textContent='Área: '+area;
+    document.getElementById('infoDens').textContent=(dens>65?'Alta':dens>35?'Moderada':'Baixa')+' ('+dens+'%)';
+    document.getElementById('infoPerda').textContent='Perda estimada: ~'+pe+'%';
+    document.getElementById('infoGrid').style.display='grid';
+    document.getElementById('acoesDiv').style.display='grid';
+
+    gerarMapa(dens);
+    document.getElementById('cardMapa').style.display='block';
+
+    resAtual={esp,parsed,conf,cult,area,dens,img:document.getElementById('preview-img').src};
+  }
+
+  resEl.classList.add('on','fi');
+  document.getElementById('preview-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function preencherLorenzi(esp,parsed){
+  document.getElementById('lorenziCard').style.display='block';
+  document.getElementById('lorNome').textContent=esp.nome;
+  document.getElementById('lorCod').textContent=esp.cod;
+  document.getElementById('lorPop').innerHTML='<b>Nomes populares:</b> '+esp.pop;
+  document.getElementById('iaRawText').textContent=
+    (parsed.justificativa||'—')+
+    (parsed.estagio?'\n\nEstágio observado: '+parsed.estagio:'')+
+    (parsed.observacoes_campo?'\n\nObservações: '+parsed.observacoes_campo:'');
+  document.getElementById('lorCarac').textContent=esp.carac;
+  document.getElementById('suscTbody').innerHTML=esp.herb.map(h=>`
+    <tr>
+      <td>${h.n}</td>
+      <td><span class="${scCls(h.pre)}">${h.pre}</span></td>
+      <td><span class="${scCls(h.posi)}">${h.posi}</span></td>
+      <td><span class="${scCls(h.post)}">${h.post}</span></td>
+      <td><span class="${scCls(h.adu)}">${h.adu}</span></td>
+    </tr>`).join('');
+}
+
+function mostrarEspecieManual(esp,parsed,dens,cult,area){
+  document.getElementById('naoEncontrado').style.display='none';
+  if(esp.res){document.getElementById('alertaRes').style.display='flex';document.getElementById('alertaTxt').textContent=esp.resInfo;}
+  else document.getElementById('alertaRes').style.display='none';
+  preencherLorenzi(esp,parsed);
+  const pe=Math.min(Math.round(esp.pb*(dens/100)*1.4),95);
+  document.getElementById('infoCult').textContent={milho:'🌽 Milho',soja:'🫘 Soja',ambos:'🌽🫘 Rotação','':"Não informada"}[cult]||cult;
+  document.getElementById('infoArea').textContent='Área: '+area;
+  document.getElementById('infoDens').textContent=(dens>65?'Alta':dens>35?'Moderada':'Baixa')+' ('+dens+'%)';
+  document.getElementById('infoPerda').textContent='Perda estimada: ~'+pe+'%';
+  document.getElementById('infoGrid').style.display='grid';
+  document.getElementById('acoesDiv').style.display='grid';
+  gerarMapa(dens);document.getElementById('cardMapa').style.display='block';
+  resAtual={esp,parsed,conf:parsed.confianca||0,cult,area,dens,img:document.getElementById('preview-img').src};
+}
+
+// ══════════════ MAPA ══════════════
+function gerarMapa(inf){
+  const g=document.getElementById('mapaGrid');g.innerHTML='';
+  for(let i=0;i<240;i++){
+    const c=document.createElement('div');c.className='mapa-cell';
+    const r=Math.random()*100;let cor;
+    if(r<100-inf)cor=`hsl(${115+Math.random()*20},${55+Math.random()*20}%,${22+Math.random()*15}%)`;
+    else if(r<100-inf/2)cor=`hsl(${45+Math.random()*10},75%,${50+Math.random()*10}%)`;
+    else if(r<100-inf/4)cor=`hsl(${25+Math.random()*10},80%,${55+Math.random()*10}%)`;
+    else cor=`hsl(${5+Math.random()*10},72%,${45+Math.random()*10}%)`;
+    c.style.background=cor;g.appendChild(c);
+  }
+}
+
+// ══════════════ ENCICLOPÉDIA ══════════════
+function filtEnc(f,btn){
+  filtEncAtual=f;
+  document.querySelectorAll('#enc .fbts .fbt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');renderEnc();
+}
+function renderEnc(){
+  document.getElementById('encStats').innerHTML=`
+    <div class="stat-card"><div class="stat-val">${DB.length}</div><div class="stat-lbl">Espécies (Lorenzi 7ª)</div></div>
+    <div class="stat-card"><div class="stat-val">${DB.filter(e=>e.res).length}</div><div class="stat-lbl">Com resistência</div></div>
+    <div class="stat-card"><div class="stat-val">${DB.filter(e=>e.cult.includes('milho')).length}</div><div class="stat-lbl">Milho</div></div>
+    <div class="stat-card"><div class="stat-val">${DB.filter(e=>e.cult.includes('soja')).length}</div><div class="stat-lbl">Soja</div></div>`;
+  let lista=DB;
+  if(filtEncAtual==='milho')lista=DB.filter(e=>e.cult.includes('milho'));
+  else if(filtEncAtual==='soja')lista=DB.filter(e=>e.cult.includes('soja'));
+  else if(filtEncAtual==='ambos')lista=DB.filter(e=>e.cult.includes('milho')&&e.cult.includes('soja'));
+  document.getElementById('encGrid').innerHTML=lista.map(e=>`
+    <div class="enc-card" onclick="abrirModal('${e.id}')">
+      <div class="enc-img" style="background:${e.cult.includes('milho')&&e.cult.includes('soja')?'#F5F5F5':e.cult.includes('milho')?'#FFFDE7':'#E8F5FB'}">${SVGS[e.id]||'<svg viewBox="0 0 80 60"><rect width="80" height="60" fill="#EDF5EB"/><text x="40" y="35" text-anchor="middle" font-size="22">🌿</text></svg>'}</div>
+      <div class="enc-body">
+        <div class="enc-nome">${e.nome}</div>
+        <div class="enc-pop">${e.pop.split(',')[0]}</div>
+        <div class="enc-tags">
+          ${e.cult.includes('milho')?'<span class="enc-tag mi">🌽</span>':''}
+          ${e.cult.includes('soja')?'<span class="enc-tag so">🫘</span>':''}
+          ${e.res?'<span class="enc-tag res">⚠ Resistência</span>':''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════ MODAL ══════════════
+function abrirModal(id){
+  const e=DB.find(x=>x.id===id);if(!e)return;
+  document.getElementById('modalTit').textContent=e.nome;
+  document.getElementById('modalSub').textContent=e.pop;
+  document.getElementById('modalBody').innerHTML=`
+    <div style="background:var(--ce);color:white;border-radius:7px;padding:8px 12px;margin-bottom:10px;font-size:11px">${e.cod}</div>
+    ${e.res?`<div style="background:#FFF3CD;border:1px solid #F0B429;border-radius:7px;padding:9px 11px;margin-bottom:10px;font-size:11px;color:#7A5000;display:flex;gap:6px"><span>⚠️</span><span>${e.resInfo}</span></div>`:''}
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--v);margin-bottom:5px">Características gerais:</div>
+    <div style="font-size:12px;color:var(--c);line-height:1.65;margin-bottom:14px">${e.carac}</div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--v);margin-bottom:8px">Controle químico — Suscetibilidade:</div>
+    <table class="m-susc">
+      <thead><tr><th>Herbicida</th><th>PRE/PPI</th><th>POS inicial</th><th>POS tardio</th><th>Pl. adulta</th></tr></thead>
+      <tbody>${e.herb.map(h=>`<tr><td>${h.n}</td><td><span class="${scCls(h.pre)}">${h.pre}</span></td><td><span class="${scCls(h.posi)}">${h.posi}</span></td><td><span class="${scCls(h.post)}">${h.post}</span></td><td><span class="${scCls(h.adu)}">${h.adu}</span></td></tr>`).join('')}</tbody>
+    </table>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:9px;color:var(--cc)">
+      <span><span class="sA">A</span> >95%</span><span><span class="sS">S</span> 85-95%</span><span><span class="sM">M</span> 50-85%</span>
+      <span><span class="sP">P</span> <50%</span><span><span class="sT">T</span> tolerante</span><span><span class="sDot">•</span> não recomendável</span><span><span class="sDash">—</span> sem info</span>
+    </div>`;
+  document.getElementById('modal').classList.add('on');
+}
+function fecharModal(ev){if(!ev||ev.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('on');}
+
+// ══════════════ HISTÓRICO ══════════════
+function salvarHistorico(){
+  if(!resAtual){alert('Faça uma análise primeiro!');return;}
+  hist.unshift({...resAtual,data:new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})});
+  renderHist();alert('✅ Salvo!');
+}
+function renderHist(){
+  const el=document.getElementById('histLista');
+  if(!hist.length){el.innerHTML='<div class="hist-vazio">📂 Nenhuma análise salva ainda.</div>';return;}
+  el.innerHTML=hist.map(h=>`
+    <div class="hist-item fi">
+      <div class="hist-thumb">${h.img?`<img src="${h.img}" alt="">`:'🌿'}</div>
+      <div class="hist-info">
+        <div class="hist-nome">${h.esp?h.esp.nome:(h.parsed?.nome_popular||'Não identificado')}${h.esp?.res?' ⚠️':''}</div>
+        <div class="hist-meta">${h.esp?h.esp.pop.split(',')[0]:'—'} · ${h.data} · ${h.cult||'N/A'}</div>
+      </div>
+      <div class="hist-conf">${h.conf}%</div>
+    </div>`).join('');
+}
+
+// ══════════════ DASHBOARD ══════════════
+function renderDash(){
+  document.getElementById('dTot').textContent=hist.length;
+  document.getElementById('dEsp').textContent=[...new Set(hist.filter(h=>h.esp).map(h=>h.esp.id))].length;
+  const cs=hist.map(h=>h.conf);
+  document.getElementById('dConf').textContent=cs.length?Math.round(cs.reduce((a,b)=>a+b)/cs.length)+'%':'—';
+  document.getElementById('dRes').textContent=hist.filter(h=>h.esp?.res).length;
+  const ch=document.getElementById('dashChart');
+  const comEsp=hist.filter(h=>h.esp);
+  if(!comEsp.length){ch.innerHTML='<div class="hist-vazio">📊 Realize análises para ver estatísticas.</div>';return;}
+  const cnt={};comEsp.forEach(h=>{cnt[h.esp.nome]=(cnt[h.esp.nome]||0)+1;});
+  const mx=Math.max(...Object.values(cnt));
+  ch.innerHTML=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).map(([n,v])=>`
+    <div style="margin-bottom:9px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;font-style:italic"><span>${n}</span><span style="color:var(--v);font-weight:600">${v}x</span></div>
+      <div style="height:6px;background:#D8E8D5;border-radius:3px;overflow:hidden"><div style="height:100%;width:${v/mx*100}%;background:var(--vc);border-radius:3px"></div></div>
+    </div>`).join('');
+}
+
+// ══════════════ EXPORTAR ══════════════
+function exportarLaudo(){
+  if(!resAtual){alert('Faça uma análise primeiro!');return;}
+  const{esp,parsed,conf,cult,area,dens}=resAtual;
+  const pe=esp?Math.min(Math.round(esp.pb*(dens/100)*1.4),95):'—';
+  const sep='═'.repeat(55);
+  const tabela=esp?esp.herb.map(h=>`  ${h.n.padEnd(30)} PRE:${h.pre}  POSi:${h.posi}  POSt:${h.post}  Adu:${h.adu}`).join('\n'):'  Não disponível';
+  const txt=`${sep}
+LAUDO FITOSSANITÁRIO — AgroScan (Reconhecimento por IA Real)
+Manual de Identificação e Controle de Plantas Daninhas
+Harri Lorenzi, 7ª Edição
+Data: ${new Date().toLocaleString('pt-BR')}
+${sep}
+
+RESULTADO DA IA (Claude Vision)
+  Identificado: ${parsed.identificado?'Sim':'Não'}
+  Espécie detectada: ${parsed.nome_cientifico||'—'} / ${parsed.nome_popular||'—'}
+  Confiança IA: ${conf}%
+  Justificativa: ${parsed.justificativa||'—'}
+  Estágio observado: ${parsed.estagio||'—'}
+
+${esp?`FICHA TÉCNICA (Lorenzi 7ª Ed.)
+  Nome científico: ${esp.nome}
+  ${esp.cod}
+  Nomes populares: ${esp.pop}
+
+  MORFOLOGIA:
+  ${esp.carac}
+
+DADOS DA ANÁLISE
+  Cultura: ${cult||'N/I'}
+  Área:    ${area}
+  Densidade: ${dens}%
+  Perda estimada: ~${pe}%
+  ${esp.res?'\nRESISTÊNCIA: '+esp.resInfo:''}
+
+CONTROLE QUÍMICO (Lorenzi 7ª Ed.)
+  Legenda: A>95% S=85-95% M=50-85% P<50% T=tolerante •=não recomendável —=sem info
+
+${tabela}
+
+`:'  Espécie não encontrada no banco Lorenzi.\n'}${sep}
+Fonte: Manual de Identificação e Controle de Plantas Daninhas
+Harri Lorenzi, 7ª Edição — Instituto Plantarum
+IA: Claude Sonnet (Anthropic)
+ATENÇÃO: Consulte sempre um Engenheiro Agrônomo credenciado.
+AgroScan — Softwares na Gestão de Fatores de Produção
+${sep}`;
+  const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);a.download=`laudo_${Date.now()}.txt`;a.click();
+}
+
+function novaAnalise(){
+  limparFoto();
+  document.getElementById('resultado').style.display='none';
+  document.getElementById('resultado').classList.remove('on');
+}
+
+// ══════════════ INIT ══════════════
+renderEnc();
+</script>
+</body>
+</html>
